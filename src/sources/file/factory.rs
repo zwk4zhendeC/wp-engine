@@ -1,0 +1,189 @@
+use super::source::{FileEncoding, FileSource};
+use async_trait::async_trait;
+use orion_conf::UvsConfFrom;
+use orion_error::ToStructError;
+use std::path::Path;
+use wp_connector_api::{
+    SourceBuildCtx, SourceFactory, SourceHandle, SourceMeta, SourceReason, SourceResult,
+    SourceSpec as ResolvedSourceSpec, SourceSvcIns,
+};
+use wp_data_model::tags::parse_tags;
+use wp_data_model::tags::validate_tags;
+
+pub struct FileSourceFactory;
+
+#[async_trait]
+impl SourceFactory for FileSourceFactory {
+    fn kind(&self) -> &'static str {
+        "file"
+    }
+
+    fn validate_spec(&self, resolved: &ResolvedSourceSpec) -> SourceResult<()> {
+        let res: anyhow::Result<()> = (|| {
+            if let Err(e) = validate_tags(&resolved.tags) {
+                anyhow::bail!("Invalid tags: {}", e);
+            }
+            let has_path = resolved.params.contains_key("path");
+            let has_base_file =
+                resolved.params.contains_key("base") && resolved.params.contains_key("file");
+            if !(has_path || has_base_file) {
+                anyhow::bail!(
+                    "File source '{}' missing required 'path' (or 'base'+'file') parameter(s)",
+                    resolved.name
+                );
+            }
+            if let Some(v) = resolved.params.get("encode").and_then(|v| v.as_str()) {
+                match v {
+                    "text" | "base64" | "hex" => {}
+                    other => anyhow::bail!(
+                        "Invalid encode value for file source '{}': {}",
+                        resolved.name,
+                        other
+                    ),
+                }
+            }
+            Ok(())
+        })();
+        res.map_err(|e| SourceReason::from_conf(e.to_string()).to_err())
+    }
+
+    async fn build(
+        &self,
+        resolved: &ResolvedSourceSpec,
+        _ctx: &SourceBuildCtx,
+    ) -> SourceResult<SourceSvcIns> {
+        let fut = async {
+            let path = if let Some(p) = resolved.params.get("path").and_then(|v| v.as_str()) {
+                p.to_string()
+            } else {
+                let base = resolved
+                    .params
+                    .get("base")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("./data/in_dat");
+                let file = resolved
+                    .params
+                    .get("file")
+                    .and_then(|v| v.as_str())
+                    .ok_or_else(|| anyhow::anyhow!("Missing 'file' when using base+file"))?;
+                std::path::Path::new(base).join(file).display().to_string()
+            };
+            let encode = match resolved.params.get("encode").and_then(|v| v.as_str()) {
+                None | Some("text") => FileEncoding::Text,
+                Some("base64") => FileEncoding::Base64,
+                Some("hex") => FileEncoding::Hex,
+                Some(x) => {
+                    return Err(anyhow::anyhow!(
+                        "Invalid encode value: {}. Must be 'text', 'base64', or 'hex'",
+                        x
+                    ));
+                }
+            };
+            let tagset = parse_tags(&resolved.tags);
+            let instances = parse_instances(resolved);
+            let ranges = compute_file_ranges(Path::new(&path), instances)
+                .map_err(|e| anyhow::anyhow!("Failed to compute file ranges: {}", e))?;
+            let mut handles = Vec::with_capacity(ranges.len());
+            let multi = ranges.len() > 1;
+            for (idx, (start, end)) in ranges.into_iter().enumerate() {
+                let key = if !multi {
+                    resolved.name.clone()
+                } else {
+                    format!("{}-{}", resolved.name, idx + 1)
+                };
+                let source = FileSource::new(
+                    key.clone(),
+                    &path,
+                    encode.clone(),
+                    tagset.clone(),
+                    start,
+                    end,
+                )
+                .await
+                .map_err(|e| anyhow::anyhow!("Failed to create FileSource: {}", e))?;
+                let mut meta = SourceMeta::new(key, resolved.kind.clone());
+                for (k, v) in tagset.item.iter() {
+                    meta.tags.set(k.clone(), v.clone());
+                }
+                handles.push(SourceHandle::new(Box::new(source), meta));
+            }
+            Ok(SourceSvcIns::new().with_sources(handles))
+        };
+
+        fut.await
+            .map_err(|e: anyhow::Error| SourceReason::from_conf(e.to_string()).to_err())
+    }
+}
+
+pub fn register_factory_only() {
+    crate::connectors::registry::register_source_factory(FileSourceFactory);
+}
+
+fn parse_instances(resolved: &ResolvedSourceSpec) -> usize {
+    resolved
+        .params
+        .get("instances")
+        .and_then(|v| v.as_i64())
+        .map(|n| n.clamp(1, FILE_SOURCE_MAX_INSTANCES as i64) as usize)
+        .unwrap_or(1)
+}
+
+const FILE_SOURCE_MAX_INSTANCES: usize = 32;
+
+fn compute_file_ranges(path: &Path, instances: usize) -> std::io::Result<Vec<(u64, Option<u64>)>> {
+    let size = std::fs::metadata(path)?.len();
+    if size == 0 || instances <= 1 {
+        return Ok(vec![(0, None)]);
+    }
+    let chunk = size.div_ceil(instances as u64);
+    let mut starts = vec![0u64];
+    for i in 1..instances {
+        let target = chunk.saturating_mul(i as u64);
+        if target >= size {
+            break;
+        }
+        let aligned = align_to_next_line(path, target, size)?;
+        if aligned < size {
+            starts.push(aligned);
+        }
+    }
+    starts.sort_unstable();
+    starts.dedup();
+    let mut ranges = Vec::with_capacity(starts.len());
+    for (idx, &start) in starts.iter().enumerate() {
+        let end = if idx + 1 < starts.len() {
+            Some(starts[idx + 1])
+        } else {
+            None
+        };
+        ranges.push((start, end));
+    }
+    Ok(ranges)
+}
+
+fn align_to_next_line(path: &Path, offset: u64, file_size: u64) -> std::io::Result<u64> {
+    use std::io::{Read, Seek, SeekFrom};
+    if offset == 0 {
+        return Ok(0);
+    }
+    let mut file = std::fs::File::open(path)?;
+    let seek_pos = offset.saturating_sub(1);
+    file.seek(SeekFrom::Start(seek_pos))?;
+    let mut pos = seek_pos;
+    let mut buf = [0u8; 4096];
+    loop {
+        let read = file.read(&mut buf)?;
+        if read == 0 {
+            return Ok(file_size);
+        }
+        for &b in &buf[..read] {
+            pos += 1;
+            if b == b'\n' {
+                return Ok(pos);
+            }
+            if pos >= file_size {
+                return Ok(file_size);
+            }
+        }
+    }
+}

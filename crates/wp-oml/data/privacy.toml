@@ -1,0 +1,28 @@
+switch = true
+looseness = "Loose" # 宽松度：loose(宽松【默认】：整条数据没有匹配到任何敏感词，正常外发)、strict(严格：整条数据没有匹配到任何敏感词，数据将拦截不外发)
+tweak = "unique tweak" # 密钥
+
+[ip]
+internet = ["192.168.0.1/16", "10.0.0.0/8"] # 内网IP脱敏空间范围
+outer_net = ["192.32.0.1/16", "200.0.0.0/8"] # 外网IP脱敏空间范围
+
+# 脱敏字段持久化，k8s容器持久化
+[[fields.ip]]
+value = "200.3.25.26"
+valid = true
+
+[[fields.ip]]
+value = "10.3.25.27"
+valid = true
+
+[[fields.domain]]
+value = "org.rd.qiwwwe-inc.cn"
+valid = true
+
+[[fields.name]]
+value = "福尔摩斯"
+valid = true
+
+[[fields.company]]
+value = "艾登网吧"
+valid = true

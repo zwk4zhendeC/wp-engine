@@ -1,0 +1,271 @@
+use orion_conf::{TomlIO, error::OrionConfResult};
+use serde_derive::{Deserialize, Serialize};
+use std::path::Path;
+use wp_error::error_handling::RobustnessMode;
+use wp_log::conf::LogConf;
+
+use crate::stat::StatConf;
+
+impl EngineConfig {}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
+pub struct RescueConf {
+    #[serde(default = "default_rescue_path")]
+    pub path: String,
+    // 若旧字段 data_path 出现，直接报错（与 log_conf.output_path 策略一致）
+    #[serde(
+        rename = "data_path",
+        default,
+        deserialize_with = "reject_data_path",
+        skip_serializing
+    )]
+    _deprecated_data_path: Option<String>,
+}
+
+impl Default for RescueConf {
+    fn default() -> Self {
+        Self {
+            path: default_rescue_path(),
+            _deprecated_data_path: None,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
+pub struct ModelsConf {
+    #[serde(default = "default_wpl_root")]
+    pub wpl: String,
+    #[serde(default = "default_oml_root")]
+    pub oml: String,
+    #[serde(default = "default_sources_root")]
+    pub sources: String,
+    #[serde(default = "default_sinks_root")]
+    pub sinks: String,
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
+pub struct PerformanceConf {
+    #[serde(default = "default_speed_limit")]
+    pub rate_limit_rps: usize,
+    #[serde(default = "default_parse_workers")]
+    pub parse_workers: usize,
+}
+impl Default for PerformanceConf {
+    fn default() -> Self {
+        Self {
+            rate_limit_rps: 10000,
+            parse_workers: 2,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
+pub struct EngineConfig {
+    #[serde(default = "default_version")]
+    version: String,
+    #[serde(default)]
+    robust: RobustnessMode,
+    #[serde(default = "default_models_conf")]
+    models: ModelsConf,
+    #[serde(default)]
+    performance: PerformanceConf,
+    #[serde(default)]
+    rescue: RescueConf,
+    #[serde(default)]
+    log_conf: LogConf,
+    // 新版：将原 [stat_conf] 改名为 [stat]；字段保持内部名 stat_conf 以兼容调用方
+    #[serde(default, rename = "stat")]
+    stat_conf: StatConf,
+    /// 是否跳过 PARSE 阶段（不启动解析/采集任务）
+    #[serde(default)]
+    skip_parse: bool,
+    /// 是否跳过 SINK 阶段（不启动 sink/infra 任务；若未进一步配置为黑洞，将阻塞在下发边界）
+    #[serde(default)]
+    skip_sink: bool,
+}
+
+// Default values and helper functions
+pub fn default_sources_root() -> String {
+    "./models/sources".to_string()
+}
+
+pub fn default_version() -> String {
+    "1.0".to_string()
+}
+
+pub fn default_wpl_root() -> String {
+    "./models/wpl".to_string()
+}
+
+pub fn default_oml_root() -> String {
+    "./models/oml".to_string()
+}
+
+pub fn default_sinks_root() -> String {
+    "./models/sinks".to_string()
+}
+
+pub fn default_rescue_path() -> String {
+    "./data/rescue".to_string()
+}
+
+fn reject_data_path<'de, D>(_de: D) -> Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error as DeError;
+    Err(D::Error::custom(
+        "[rescue].data_path 已移除；请改为 [rescue].path",
+    ))
+}
+
+pub fn default_parse_workers() -> usize {
+    2
+}
+
+pub fn default_speed_limit() -> usize {
+    10000
+}
+
+pub fn default_models_conf() -> ModelsConf {
+    ModelsConf {
+        wpl: default_wpl_root(),
+        oml: default_oml_root(),
+        sources: default_sources_root(),
+        sinks: default_sinks_root(),
+    }
+}
+
+impl Default for EngineConfig {
+    fn default() -> Self {
+        Self {
+            version: default_version(),
+            rescue: RescueConf::default(),
+            models: default_models_conf(),
+            performance: PerformanceConf::default(),
+            log_conf: LogConf::default(),
+            stat_conf: StatConf::default(),
+            robust: RobustnessMode::Normal,
+            skip_parse: false,
+            skip_sink: false,
+        }
+    }
+}
+
+impl EngineConfig {
+    pub fn init<P: AsRef<Path>>(root: P) -> Self {
+        Self {
+            version: "1.0".to_string(),
+            rescue: RescueConf {
+                path: format!("{}/data/rescue", root.as_ref().display()),
+                _deprecated_data_path: None,
+            },
+            models: ModelsConf {
+                wpl: format!("{}/models/wpl", root.as_ref().display()),
+                oml: format!("{}/models/oml", root.as_ref().display()),
+                // Use pluralized roots for sources/sinks; legacy single forms are no longer default
+                sources: format!("{}/models/sources", root.as_ref().display()),
+                sinks: format!("{}/models/sinks", root.as_ref().display()),
+            },
+            performance: PerformanceConf {
+                rate_limit_rps: 10000,
+                parse_workers: 2,
+            },
+            log_conf: LogConf::default(),
+            stat_conf: StatConf::default(),
+            robust: RobustnessMode::Normal,
+            skip_parse: false,
+            skip_sink: false,
+        }
+    }
+
+    // Accessors for config fields (prefer using these over direct fields)
+    pub fn version(&self) -> &str {
+        &self.version
+    }
+
+    pub fn src_root(&self) -> &str {
+        self.models.sources.as_str()
+    }
+
+    pub fn wpl_root(&self) -> &str {
+        self.models.wpl.as_str()
+    }
+
+    pub fn oml_root(&self) -> &str {
+        self.models.oml.as_str()
+    }
+
+    pub fn sinks_root(&self) -> &str {
+        self.models.sinks.as_str()
+    }
+
+    pub fn robust(&self) -> &RobustnessMode {
+        &self.robust
+    }
+
+    pub fn parallel(&self) -> usize {
+        self.performance.parse_workers
+    }
+
+    pub fn speed_limit(&self) -> usize {
+        self.performance.rate_limit_rps
+    }
+
+    pub fn stat_conf(&self) -> &StatConf {
+        &self.stat_conf
+    }
+
+    pub fn rule_root(&self) -> &str {
+        self.wpl_root()
+    }
+
+    // Additional methods that were in the original EngineConfig
+    pub fn rescue_root(&self) -> &str {
+        &self.rescue.path
+    }
+
+    pub fn log_conf(&self) -> &LogConf {
+        &self.log_conf
+    }
+
+    // 新增阶段控制开关
+    pub fn skip_parse(&self) -> bool {
+        self.skip_parse
+    }
+    pub fn skip_sink(&self) -> bool {
+        self.skip_sink
+    }
+
+    pub fn src_conf_of(&self, file_name: &str) -> String {
+        format!("{}/{}", self.src_root(), file_name)
+    }
+
+    pub fn load_or_init<P: AsRef<Path>>(work_root: P) -> OrionConfResult<Self> {
+        use crate::constants::ENGINE_CONF_FILE;
+        let engine_conf_path = work_root.as_ref().join("conf").join(ENGINE_CONF_FILE);
+        if engine_conf_path.exists() {
+            EngineConfig::load_toml(&engine_conf_path)
+        } else {
+            let conf = EngineConfig::init(&work_root);
+            conf.save_toml(&engine_conf_path)?;
+            Ok(conf)
+        }
+    }
+
+    // Add a gen_default method for StatConf compatibility
+    pub fn gen_default(&self) -> StatConf {
+        StatConf::default()
+    }
+
+    // Backward compatibility method
+    pub fn sink_root(&self) -> &str {
+        self.sinks_root()
+    }
+
+    // Add a setter for rule_root if needed
+    pub fn set_rule_root(&mut self, _root: String) {
+        // This is a no-op since the rule_root is derived from wpl_root
+        // The method is kept for compatibility
+    }
+}
