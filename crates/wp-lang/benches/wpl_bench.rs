@@ -216,7 +216,6 @@ criterion_group!(
     criterion_benchmark_suc,
     criterion_benchmark_fail,
     criterion_nginx,
-    criterion_ngsoc,
     criterion_json_deep,
     criterion_json_array,
     criterion_json_flat_no_subs,
