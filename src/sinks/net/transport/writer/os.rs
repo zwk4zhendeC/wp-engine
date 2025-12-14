@@ -10,11 +10,11 @@ impl NetWriter {
         {
             if let Transport::Tcp(stream) = &self.transport {
                 let fd = stream.as_raw_fd();
-                // Linux: ioctl SIOCOUTQ
+                // Linux: ioctl TIOCOUTQ (get number of unsent bytes in socket send queue)
                 #[cfg(target_os = "linux")]
                 unsafe {
                     let mut outq: libc::c_int = 0;
-                    let rc = libc::ioctl(fd, libc::SIOCOUTQ, &mut outq);
+                    let rc = libc::ioctl(fd, libc::TIOCOUTQ, &mut outq);
                     if rc == -1 {
                         return Err(std::io::Error::last_os_error());
                     }
