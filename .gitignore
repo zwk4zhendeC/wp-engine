@@ -1,1 +1,11 @@
-target/
+target
+.report
+.*
+temp
+tmp
+/data
+/rescue
+/res.dat
+tests/instance
+wp-docs
+
