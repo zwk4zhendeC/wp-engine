@@ -21,7 +21,7 @@ version.workspace = true
 edition.workspace = true
 authors = ["Warp Parse Dev Team"]
 description = "High-performance data parsing and processing engine"
-license = "Apache-2.0"
+license = "ELv2"
 
 [lib]
 name = "wp_engine"
