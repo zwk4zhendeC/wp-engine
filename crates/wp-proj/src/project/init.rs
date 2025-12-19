@@ -12,6 +12,29 @@ use wp_error::{RunError, RunReason};
 //use wp_engine::orchestrator::config::SRC_FILE_PATH;
 use wp_error::run_error::RunResult;
 
+const CONF_DIR: &str = "conf";
+const CONF_WPARSE_FILE: &str = "conf/wparse.toml";
+const CONF_WPGEN_FILE: &str = "conf/wpgen.toml";
+const CONNECTORS_DIR: &str = "connectors";
+const CONNECTORS_SOURCE_DIR: &str = "connectors/source.d";
+const CONNECTORS_SINK_DIR: &str = "connectors/sink.d";
+const LEGACY_SOURCE_DIR: &str = "source.d";
+const LEGACY_SINK_DIR: &str = "sink.d";
+const MODELS_DIR: &str = "models";
+const MODELS_WPL_DIR: &str = "models/wpl";
+const MODELS_OML_DIR: &str = "models/oml";
+const MODELS_KNOWLEDGE_DIR: &str = "models/knowledge";
+const MODELS_KNOWLEDGE_EXAMPLE_DIR: &str = "models/knowledge/example";
+const MODELS_SOURCES_DIR: &str = "models/sources";
+const MODELS_SINKS_DIR: &str = "models/sinks";
+const MODELS_WPL_PARSE_FILE: &str = "models/wpl/parse.wpl";
+const MODELS_WPL_SAMPLE_FILE: &str = "models/wpl/sample.dat";
+const MODELS_OML_EXAMPLE_FILE: &str = "models/oml/example.oml";
+const MODELS_OML_KNOWDB_FILE: &str = "models/oml/knowdb.toml";
+const TOPOLOGY_SOURCES_DIR: &str = "topology/sources";
+const TOPOLOGY_SINKS_DIR: &str = "topology/sinks";
+const TOPOLOGY_WPSRC_FILE: &str = "topology/sources/wpsrc.toml";
+
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub enum InitMode {
     Full,
@@ -120,13 +143,13 @@ impl WarpProject {
         use std::fs;
 
         let work_root = work_root.as_ref();
-        let conf_dir = work_root.join("conf");
+        let conf_dir = work_root.join(CONF_DIR);
         if let Err(_) = fs::create_dir_all(&conf_dir) {
             // 如果创建目录失败，记录警告但继续
             eprintln!("Warning: Failed to create conf directory");
         }
 
-        let wpgen_config_path = conf_dir.join("wpgen.toml");
+        let wpgen_config_path = work_root.join(CONF_WPGEN_FILE);
         if !wpgen_config_path.exists() {
             // 使用 include_str! 读取示例配置文件
             let wpgen_config_content = include_str!("../example/conf/wpgen.toml");
@@ -144,12 +167,12 @@ impl WarpProject {
         use std::fs;
 
         let work_root = work_root.as_ref();
-        let conf_dir = work_root.join("conf");
+        let conf_dir = work_root.join(CONF_DIR);
         if let Err(_) = fs::create_dir_all(&conf_dir) {
             eprintln!("Warning: Failed to create conf directory");
         }
 
-        let engine_config_path = conf_dir.join("wparse.toml");
+        let engine_config_path = work_root.join(CONF_WPARSE_FILE);
         if !engine_config_path.exists() {
             let engine_config_content = include_str!("../example/conf/wparse.toml");
             if let Err(_) = fs::write(&engine_config_path, engine_config_content) {
@@ -163,17 +186,17 @@ impl WarpProject {
     fn mk_framework_dir(&self, mode: InitMode) -> RunResult<()> {
         let work_root = self.work_root_path();
         if mode.enable_conf() {
-            ErrorHandler::safe_create_dir(&work_root.join("conf"))?;
+            ErrorHandler::safe_create_dir(&work_root.join(CONF_DIR))?;
         }
         if mode.enable_model() {
-            ErrorHandler::safe_create_dir(&work_root.join("models/wpl"))?;
-            ErrorHandler::safe_create_dir(&work_root.join("models/oml"))?;
-            ErrorHandler::safe_create_dir(&work_root.join("models/knowledge"))?;
-            ErrorHandler::safe_create_dir(&work_root.join("models/knowledge/example"))?;
+            ErrorHandler::safe_create_dir(&work_root.join(MODELS_WPL_DIR))?;
+            ErrorHandler::safe_create_dir(&work_root.join(MODELS_OML_DIR))?;
+            ErrorHandler::safe_create_dir(&work_root.join(MODELS_KNOWLEDGE_DIR))?;
+            ErrorHandler::safe_create_dir(&work_root.join(MODELS_KNOWLEDGE_EXAMPLE_DIR))?;
         }
         if mode.enable_topology() {
-            ErrorHandler::safe_create_dir(&work_root.join("topology/sources"))?;
-            ErrorHandler::safe_create_dir(&work_root.join("topology/sinks"))?;
+            ErrorHandler::safe_create_dir(&work_root.join(TOPOLOGY_SOURCES_DIR))?;
+            ErrorHandler::safe_create_dir(&work_root.join(TOPOLOGY_SINKS_DIR))?;
         }
         ErrorHandler::safe_create_dir(&Self::resolve_with_root(&work_root, SRC_FILE_PATH))?;
         ErrorHandler::safe_create_dir(&Self::resolve_with_root(&work_root, OUT_FILE_PATH))?;
@@ -285,101 +308,89 @@ mod tests {
         assert!(result.is_ok(), "Full mode initialization should succeed");
 
         // 验证创建的目录和文件
+        assert!(work_root.join(CONF_DIR).exists(), "conf directory should exist");
         assert!(
-            work_root.join("conf").exists(),
-            "conf directory should exist"
-        );
-        assert!(
-            work_root.join("conf/wparse.toml").exists(),
+            work_root.join(CONF_WPARSE_FILE).exists(),
             "wparse.toml should exist"
         );
         assert!(
-            work_root.join("conf/wpgen.toml").exists(),
+            work_root.join(CONF_WPGEN_FILE).exists(),
             "wpgen.toml should exist"
         );
 
         assert!(
-            work_root.join("connectors").exists(),
+            work_root.join(CONNECTORS_DIR).exists(),
             "connectors directory should exist"
         );
         assert!(
-            work_root.join("connectors/source.d").exists(),
+            work_root.join(CONNECTORS_SOURCE_DIR).exists(),
             "source.d directory should exist"
         );
         assert!(
-            work_root.join("connectors/sink.d").exists(),
+            work_root.join(CONNECTORS_SINK_DIR).exists(),
             "sink.d directory should exist"
         );
         assert!(
-            !work_root.join("source.d").exists(),
+            !work_root.join(LEGACY_SOURCE_DIR).exists(),
             "legacy top-level source.d should not be created"
         );
         assert!(
-            !work_root.join("sink.d").exists(),
+            !work_root.join(LEGACY_SINK_DIR).exists(),
             "legacy top-level sink.d should not be created"
         );
 
+        assert!(work_root.join(MODELS_DIR).exists(), "models directory should exist");
+        assert!(work_root.join(MODELS_WPL_DIR).exists(), "wpl directory should exist");
+        assert!(work_root.join(MODELS_OML_DIR).exists(), "oml directory should exist");
         assert!(
-            work_root.join("models").exists(),
-            "models directory should exist"
-        );
-        assert!(
-            work_root.join("models/wpl").exists(),
-            "wpl directory should exist"
-        );
-        assert!(
-            work_root.join("models/oml").exists(),
-            "oml directory should exist"
-        );
-        assert!(
-            work_root.join("topology/sources").exists(),
+            work_root.join(TOPOLOGY_SOURCES_DIR).exists(),
             "topology sources directory should exist"
         );
         assert!(
-            work_root.join("topology/sinks").exists(),
+            work_root.join(TOPOLOGY_SINKS_DIR).exists(),
             "topology sinks directory should exist"
         );
         assert!(
-            !work_root.join("models/sources").exists(),
+            !work_root.join(MODELS_SOURCES_DIR).exists(),
             "models/sources should remain absent; use topology/sources"
         );
         assert!(
-            !work_root.join("models/sinks").exists(),
+            !work_root.join(MODELS_SINKS_DIR).exists(),
             "models/sinks should remain absent; use topology/sinks"
         );
         assert!(
-            work_root.join("models/knowledge").exists(),
+            work_root.join(MODELS_KNOWLEDGE_DIR).exists(),
             "knowledge directory should exist"
         );
 
         // 验证示例文件
         assert!(
-            work_root.join("models/wpl/parse.wpl").exists(),
+            work_root.join(MODELS_WPL_PARSE_FILE).exists(),
             "parse.wpl should exist"
         );
         assert!(
-            work_root.join("models/wpl/sample.dat").exists(),
+            work_root.join(MODELS_WPL_SAMPLE_FILE).exists(),
             "sample.dat should exist"
         );
         assert!(
-            work_root.join("models/oml/example.oml").exists(),
+            work_root.join(MODELS_OML_EXAMPLE_FILE).exists(),
             "example.oml should exist"
         );
         assert!(
-            work_root.join("models/oml/knowdb.toml").exists(),
+            work_root.join(MODELS_OML_KNOWDB_FILE).exists(),
             "knowdb.toml should exist"
         );
 
         // 验证连接器模板
         assert!(
             work_root
-                .join("connectors/source.d/00-file-default.toml")
+                .join(format!("{}/00-file-default.toml", CONNECTORS_SOURCE_DIR))
                 .exists(),
             "file source connector should exist"
         );
         assert!(
             work_root
-                .join("connectors/sink.d/02-file-json.toml")
+                .join(format!("{}/02-file-json.toml", CONNECTORS_SINK_DIR))
                 .exists(),
             "file sink connector should exist"
         );
@@ -399,58 +410,46 @@ mod tests {
         assert!(result.is_ok(), "Normal mode initialization should succeed");
 
         // 验证配置目录
+        assert!(work_root.join(CONF_DIR).exists(), "conf directory should exist");
         assert!(
-            work_root.join("conf").exists(),
-            "conf directory should exist"
-        );
-        assert!(
-            work_root.join("conf/wparse.toml").exists(),
+            work_root.join(CONF_WPARSE_FILE).exists(),
             "wparse.toml should exist"
         );
         assert!(
-            work_root.join("conf/wpgen.toml").exists(),
+            work_root.join(CONF_WPGEN_FILE).exists(),
             "wpgen.toml should exist"
         );
 
         // 验证模型目录和文件
+        assert!(work_root.join(MODELS_DIR).exists(), "models directory should exist");
+        assert!(work_root.join(MODELS_WPL_DIR).exists(), "wpl directory should exist");
+        assert!(work_root.join(MODELS_OML_DIR).exists(), "oml directory should exist");
         assert!(
-            work_root.join("models").exists(),
-            "models directory should exist"
-        );
-        assert!(
-            work_root.join("models/wpl").exists(),
-            "wpl directory should exist"
-        );
-        assert!(
-            work_root.join("models/oml").exists(),
-            "oml directory should exist"
-        );
-        assert!(
-            !work_root.join("topology/sources").exists(),
+            !work_root.join(TOPOLOGY_SOURCES_DIR).exists(),
             "topology sources directory should not exist in Model mode"
         );
         assert!(
-            !work_root.join("topology/sinks").exists(),
+            !work_root.join(TOPOLOGY_SINKS_DIR).exists(),
             "topology sinks directory should not exist in Model mode"
         );
         assert!(
-            work_root.join("models/knowledge").exists(),
+            work_root.join(MODELS_KNOWLEDGE_DIR).exists(),
             "knowledge directory should exist"
         );
 
         // 验证示例文件
         assert!(
-            work_root.join("models/wpl/parse.wpl").exists(),
+            work_root.join(MODELS_WPL_PARSE_FILE).exists(),
             "parse.wpl should exist"
         );
         assert!(
-            work_root.join("models/oml/example.oml").exists(),
+            work_root.join(MODELS_OML_EXAMPLE_FILE).exists(),
             "example.oml should exist"
         );
 
         // Normal 模式不会创建 connectors，只有 Full 模式才会。
         assert!(
-            !work_root.join("connectors").exists(),
+            !work_root.join(CONNECTORS_DIR).exists(),
             "connectors directory should not exist in Model mode"
         );
     }
@@ -469,27 +468,24 @@ mod tests {
         assert!(result.is_ok(), "Conf mode initialization should succeed");
 
         // 验证配置目录
+        assert!(work_root.join(CONF_DIR).exists(), "conf directory should exist");
         assert!(
-            work_root.join("conf").exists(),
-            "conf directory should exist"
-        );
-        assert!(
-            work_root.join("conf/wparse.toml").exists(),
+            work_root.join(CONF_WPARSE_FILE).exists(),
             "wparse.toml should exist"
         );
         assert!(
-            work_root.join("conf/wpgen.toml").exists(),
+            work_root.join(CONF_WPGEN_FILE).exists(),
             "wpgen.toml should exist"
         );
 
         // Conf 模式不应该创建连接器（只创建配置）
         assert!(
-            !work_root.join("connectors").exists(),
+            !work_root.join(CONNECTORS_DIR).exists(),
             "connectors directory should not exist in Conf mode"
         );
         // Conf 模式不应该创建模型（修复后）
         assert!(
-            !work_root.join("models").exists(),
+            !work_root.join(MODELS_DIR).exists(),
             "models directory should not exist in Conf mode"
         );
     }
@@ -510,21 +506,21 @@ mod tests {
         // Data 模式只创建基础目录，不创建模型相关内容（修复后）
         // Data 模式不应该创建配置或连接器
         assert!(
-            !work_root.join("conf").exists(),
+            !work_root.join(CONF_DIR).exists(),
             "conf directory should not exist in Data mode"
         );
         assert!(
-            !work_root.join("connectors").exists(),
+            !work_root.join(CONNECTORS_DIR).exists(),
             "connectors directory should not exist in Data mode"
         );
 
         // Data 模式不应该创建任何 models 相关内容（修复后）
         assert!(
-            !work_root.join("models").exists(),
+            !work_root.join(MODELS_DIR).exists(),
             "models directory should not exist in Data mode"
         );
         assert!(
-            !work_root.join("models/knowledge").exists(),
+            !work_root.join(MODELS_KNOWLEDGE_DIR).exists(),
             "knowledge directory should not exist in Data mode"
         );
     }
@@ -543,31 +539,19 @@ mod tests {
         assert!(result.is_ok(), "Basic initialization should succeed");
 
         // 验证基础结构
+        assert!(work_root.join(CONF_DIR).exists(), "conf directory should exist");
         assert!(
-            work_root.join("conf").exists(),
-            "conf directory should exist"
-        );
-        assert!(
-            work_root.join("conf/wparse.toml").exists(),
+            work_root.join(CONF_WPARSE_FILE).exists(),
             "wparse.toml should exist"
         );
         assert!(
-            work_root.join("conf/wpgen.toml").exists(),
+            work_root.join(CONF_WPGEN_FILE).exists(),
             "wpgen.toml should exist"
         );
 
-        assert!(
-            work_root.join("models").exists(),
-            "models directory should exist"
-        );
-        assert!(
-            work_root.join("models/wpl").exists(),
-            "wpl directory should exist"
-        );
-        assert!(
-            work_root.join("models/oml").exists(),
-            "oml directory should exist"
-        );
+        assert!(work_root.join(MODELS_DIR).exists(), "models directory should exist");
+        assert!(work_root.join(MODELS_WPL_DIR).exists(), "wpl directory should exist");
+        assert!(work_root.join(MODELS_OML_DIR).exists(), "oml directory should exist");
     }
 
     #[test]
@@ -590,35 +574,35 @@ mod tests {
 
         // 验证模型文件
         assert!(
-            work_root.join("models/wpl/parse.wpl").exists(),
+            work_root.join(MODELS_WPL_PARSE_FILE).exists(),
             "parse.wpl should exist"
         );
         assert!(
-            work_root.join("models/wpl/sample.dat").exists(),
+            work_root.join(MODELS_WPL_SAMPLE_FILE).exists(),
             "sample.dat should exist"
         );
         assert!(
-            work_root.join("models/oml/example.oml").exists(),
+            work_root.join(MODELS_OML_EXAMPLE_FILE).exists(),
             "example.oml should exist"
         );
         assert!(
-            work_root.join("models/oml/knowdb.toml").exists(),
+            work_root.join(MODELS_OML_KNOWDB_FILE).exists(),
             "knowdb.toml should exist"
         );
         assert!(
-            !work_root.join("topology/sources/wpsrc.toml").exists(),
+            !work_root.join(TOPOLOGY_WPSRC_FILE).exists(),
             "wpsrc.toml should not exist in pure model initialization"
         );
         assert!(
-            !work_root.join("connectors").exists(),
+            !work_root.join(CONNECTORS_DIR).exists(),
             "connectors directory should not exist in model init"
         );
         assert!(
-            !work_root.join("source.d").exists(),
+            !work_root.join(LEGACY_SOURCE_DIR).exists(),
             "legacy top-level source.d should not exist in model init"
         );
         assert!(
-            !work_root.join("sink.d").exists(),
+            !work_root.join(LEGACY_SINK_DIR).exists(),
             "legacy top-level sink.d should not exist in model init"
         );
     }
@@ -665,7 +649,7 @@ mod tests {
         assert!(result.is_ok(), "Wpgen config initialization should succeed");
 
         // 验证配置文件被创建
-        let wpgen_config_path = work_root.join("conf/wpgen.toml");
+        let wpgen_config_path = work_root.join(CONF_WPGEN_FILE);
         assert!(wpgen_config_path.exists(), "wpgen.toml should exist");
 
         // 验证文件内容

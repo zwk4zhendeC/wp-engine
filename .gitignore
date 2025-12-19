@@ -11,3 +11,4 @@ wp-docs
 .idea/
 .vscode/
 .DS_Store
+crates/wp-proj/models/sources/wpsrc.toml
