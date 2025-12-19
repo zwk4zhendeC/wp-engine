@@ -31,7 +31,7 @@ impl InitMode {
         *self != InitMode::Data
     }
     pub fn enable_topology(&self) -> bool {
-        *self == InitMode::Topology || *self == InitMode::Full
+        matches!(self, InitMode::Topology | InitMode::Full)
     }
 }
 
@@ -332,12 +332,20 @@ mod tests {
             "oml directory should exist"
         );
         assert!(
-            work_root.join("models/sources").exists(),
-            "sources directory should exist"
+            work_root.join("topology/sources").exists(),
+            "topology sources directory should exist"
         );
         assert!(
-            work_root.join("models/sinks").exists(),
-            "sinks directory should exist"
+            work_root.join("topology/sinks").exists(),
+            "topology sinks directory should exist"
+        );
+        assert!(
+            !work_root.join("models/sources").exists(),
+            "models/sources should remain absent; use topology/sources"
+        );
+        assert!(
+            !work_root.join("models/sinks").exists(),
+            "models/sinks should remain absent; use topology/sinks"
         );
         assert!(
             work_root.join("models/knowledge").exists(),
@@ -418,12 +426,12 @@ mod tests {
             "oml directory should exist"
         );
         assert!(
-            work_root.join("topology/sources").exists(),
-            "sources directory should exist"
+            !work_root.join("topology/sources").exists(),
+            "topology sources directory should not exist in Model mode"
         );
         assert!(
-            work_root.join("topology/sinks").exists(),
-            "sinks directory should exist"
+            !work_root.join("topology/sinks").exists(),
+            "topology sinks directory should not exist in Model mode"
         );
         assert!(
             work_root.join("models/knowledge").exists(),
@@ -598,8 +606,8 @@ mod tests {
             "knowdb.toml should exist"
         );
         assert!(
-            work_root.join("topology/sources/wpsrc.toml").exists(),
-            "wpsrc.toml should exist"
+            !work_root.join("topology/sources/wpsrc.toml").exists(),
+            "wpsrc.toml should not exist in pure model initialization"
         );
         assert!(
             !work_root.join("connectors").exists(),

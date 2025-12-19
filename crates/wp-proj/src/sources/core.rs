@@ -116,7 +116,8 @@ impl Sources {
     /// Ok(()) if initialization succeeds, Err(RunError) otherwise
     pub fn init<P: AsRef<Path>>(&self, work_root: P) -> RunResult<()> {
         let work_root = work_root.as_ref();
-        let wpsrc_path = SpecConfPath::topology(PathBuf::from(work_root), "sources")?;
+        let wpsrc_dir = SpecConfPath::topology(PathBuf::from(work_root), "sources")?;
+        let wpsrc_path = wpsrc_dir.join(WPSRC_TOML);
 
         // Ensure parent directory exists
         self.ensure_directory_exists(&wpsrc_path)?;
