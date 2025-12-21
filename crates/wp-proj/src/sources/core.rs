@@ -171,40 +171,29 @@ impl Sources {
         })
     }
 
-    /// Resolves wpsrc.toml path for initialization operations
-    fn resolve_wpsrc_path_for_init<P: AsRef<std::path::Path>>(
-        &self,
-        work_root: P,
-    ) -> RunResult<PathBuf> {
-        let work_root = work_root.as_ref();
-        let work_root_str = work_root.to_string_lossy().to_string();
-
-        if let Ok((cm, main)) = load_warp_engine_confs(work_root_str.as_str()) {
-            let wpsrc_str = main.src_conf_of(WPSRC_TOML);
-            let wpsrc_path = Path::new(&wpsrc_str);
-            let resolved = if wpsrc_path.is_absolute() {
-                wpsrc_path.to_path_buf()
-            } else {
-                PathBuf::from(cm.work_root_path()).join(wpsrc_path)
-            };
-            return Ok(resolved);
-        }
-
-        // fallback: assume modern topology/sources layout when engine config is unavailable
-        Ok(work_root.join("models").join("sources").join(WPSRC_TOML))
-    }
-
     /// Validates wpsrc.toml configuration parsing
+    ///
+    /// This method loads the configuration from wpsrc.toml, serializes it back to TOML format,
+    /// and then uses the parser to validate the configuration structure and content.
+    ///
+    /// # Arguments
+    /// * `work_root` - The project root directory
+    /// * `wpsrc_path` - Path to the wpsrc.toml configuration file
+    ///
+    /// # Returns
+    /// Ok(()) if validation succeeds, Err(RunError) otherwise
     fn validate_wpsrc_config(&self, work_root: &Path, wpsrc_path: &Path) -> RunResult<()> {
         let parser = SourceConfigParser::new(work_root.to_path_buf());
 
-        // 使用 WarpSources::load_toml 读取配置
+        // Load configuration from TOML file
         let sources_config = WarpSources::load_toml(wpsrc_path).err_conv()?;
-        //.map_err(|e| RunReason::from_conf(format!("Failed to load wpsrc.toml: {}", e)).to_err())?;
+
+        // Serialize configuration to validate structure
         let config_content = toml::to_string_pretty(&sources_config).map_err(|e| {
             RunReason::from_conf(format!("Failed to serialize config: {}", e)).to_err()
         })?;
 
+        // Parse and validate the configuration content
         parser
             .parse_and_validate_only(&config_content)
             .map_err(|e| {
@@ -215,10 +204,21 @@ impl Sources {
     }
 
     /// Parses configuration without comprehensive validation
+    ///
+    /// This method performs lightweight configuration parsing by loading the TOML file
+    /// (or using an empty configuration if the file doesn't exist) and validating
+    /// the basic structure without full validation.
+    ///
+    /// # Arguments
+    /// * `work_root` - The project root directory
+    /// * `wpsrc_path` - Path to the wpsrc.toml configuration file
+    ///
+    /// # Returns
+    /// Ok(()) if parsing succeeds, Err(RunError) otherwise
     fn parse_config_only(&self, work_root: &Path, wpsrc_path: &Path) -> RunResult<()> {
         let parser = SourceConfigParser::new(work_root.to_path_buf());
 
-        // 使用 WarpSources::load_toml 读取配置，如果文件不存在则使用默认空配置
+        // Load configuration from TOML file, or use empty config if file doesn't exist
         let sources_config = if wpsrc_path.exists() {
             WarpSources::load_toml(wpsrc_path).map_err(|e| {
                 RunReason::from_conf(format!("Failed to load wpsrc.toml: {}", e)).to_err()
@@ -227,10 +227,12 @@ impl Sources {
             WarpSources { sources: vec![] }
         };
 
+        // Serialize configuration for parsing
         let config_content = toml::to_string_pretty(&sources_config).map_err(|e| {
             RunReason::from_conf(format!("Failed to serialize config: {}", e)).to_err()
         })?;
 
+        // Parse and validate the configuration structure
         parser
             .parse_and_validate_only(&config_content)
             .map_err(|e| {
@@ -260,9 +262,20 @@ impl Sources {
     }
 
     /// Adds default sources to configuration
+    ///
+    /// This method adds default file and syslog sources to the configuration
+    /// if they don't already exist. The syslog source is added but disabled by default.
+    ///
+    /// # Arguments
+    /// * `config` - Mutable reference to the WarpSources configuration
+    ///
+    /// # Returns
+    /// Ok(()) if operation succeeds, Err(RunError) otherwise
     fn add_default_sources(&self, config: &mut WarpSources) -> RunResult<()> {
         let default_sources = vec![
+            // Add a default file source that reads from gen.dat
             source_builders::file_source(DEFAULT_FILE_SOURCE_KEY, DEFAULT_FILE_SOURCE_PATH),
+            // Add a default syslog TCP source (disabled by default)
             source_builders::syslog_tcp_source(
                 DEFAULT_SYSLOG_SOURCE_ID,
                 DEFAULT_SYSLOG_HOST,
@@ -271,6 +284,7 @@ impl Sources {
             .with_enable(Some(false)),
         ];
 
+        // Add each source if it doesn't already exist
         for source_item in default_sources {
             Self::ensure_source_exists(config, source_item);
         }
