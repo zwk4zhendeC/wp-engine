@@ -213,8 +213,6 @@ mod tests {
     const CONNECTORS_DIR: &str = "connectors";
     const CONNECTORS_SOURCE_DIR: &str = "connectors/source.d";
     const CONNECTORS_SINK_DIR: &str = "connectors/sink.d";
-    const LEGACY_SOURCE_DIR: &str = "source.d";
-    const LEGACY_SINK_DIR: &str = "sink.d";
     const MODELS_DIR: &str = "models";
     const TOPO_SOURCES_DIR: &str = "topology/sources";
     const TOPO_SINKS_DIR: &str = "topology/sinks";
