@@ -172,6 +172,7 @@ impl Sources {
     }
 
     /// Resolves wpsrc.toml path for initialization operations
+    /*
     fn resolve_wpsrc_path_for_init<P: AsRef<std::path::Path>>(
         &self,
         work_root: P,
@@ -193,6 +194,7 @@ impl Sources {
         // fallback: assume modern models/sources layout when engine config is unavailable
         Ok(work_root.join("models").join("sources").join(WPSRC_TOML))
     }
+    */
 
     /// Validates wpsrc.toml configuration parsing
     fn validate_wpsrc_config(&self, work_root: &Path, wpsrc_path: &Path) -> RunResult<()> {
