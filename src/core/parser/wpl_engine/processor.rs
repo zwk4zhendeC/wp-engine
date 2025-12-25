@@ -68,15 +68,23 @@ pub(crate) fn enrich_record_with_tags(
     if pairs.is_empty() {
         return record;
     }
+    let mut pending = Vec::new();
+    for (key, value) in pairs {
+        if record.field(&key).is_none() {
+            pending.push((key, value));
+        }
+    }
+    if pending.is_empty() {
+        return record;
+    }
     // Avoid cloning when the Arc is unique
     let mut enriched = match Arc::try_unwrap(record) {
         Ok(inner) => inner,
         Err(shared) => (*shared).clone(),
     };
-    for (key, value) in pairs {
-        if enriched.field(&key).is_none() {
-            enriched.append(DataField::from_chars(key, value));
-        }
+    for (key, value) in pending {
+        debug_data!("enrich source tags {}:{}", key, value);
+        enriched.append(DataField::from_chars(key, value));
     }
     Arc::new(enriched)
 }
@@ -292,6 +300,26 @@ rule json_payload {
         assert_chars_field(record, "env", "test");
         assert_chars_field(record, "dev_src_ip", "10.0.0.1");
         assert_chars_field(record, "access_source", "custom");
+    }
+
+    #[test]
+    fn enrich_record_with_tags_skips_when_all_present() {
+        let mut tags = Tags::new();
+        tags.set("env", "prod");
+        let record = DataRecord::from(vec![DataField::from_chars("env", "prod")]);
+        let arc = Arc::new(record);
+        let enriched = enrich_record_with_tags(Arc::clone(&arc), &tags);
+        assert!(Arc::ptr_eq(&arc, &enriched));
+    }
+
+    #[test]
+    fn enrich_record_with_tags_appends_missing_keys() {
+        let mut tags = Tags::new();
+        tags.set("env", "test");
+        let record = Arc::new(DataRecord::from(vec![DataField::from_chars("foo", "bar")]));
+        let enriched = enrich_record_with_tags(record, &tags);
+        assert_chars_field(&enriched, "env", "test");
+        assert_chars_field(&enriched, "foo", "bar");
     }
 
     const MID_FAIL_RULE: &str = r#"
