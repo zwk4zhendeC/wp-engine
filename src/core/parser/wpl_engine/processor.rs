@@ -3,8 +3,11 @@
 use super::types::{ParsedDatSet, ProcessResult};
 use crate::core::parser::{ParseOption, WplEngine};
 use crate::sinks::{ProcMeta, SinkPackage, SinkRecUnit};
+use serde::Deserialize;
 use std::collections::HashMap;
+use std::sync::Arc;
 use wp_connector_api::SourceEvent;
+use wp_model_core::model::{DataField, DataRecord};
 use wpl::WparseError;
 
 impl WplEngine {
@@ -24,6 +27,7 @@ impl WplEngine {
             match self.pipelines.parse_event(&data, setting) {
                 ProcessResult::Success { wpl_key, record } => {
                     // 完全成功解析
+                    let record = enrich_record_with_tags(record, &data.tags);
                     let rec_unit = SinkRecUnit::new(data.event_id, ProcMeta::Null, record);
                     sink_groups.entry(wpl_key).or_default().push(rec_unit);
                 }
@@ -33,6 +37,7 @@ impl WplEngine {
                     residue,
                 } => {
                     // 部分成功，有残留数据
+                    let record = enrich_record_with_tags(record, &data.tags);
                     let rec_unit = SinkRecUnit::new(data.event_id, ProcMeta::Null, record);
                     sink_groups.entry(wpl_key).or_default().push(rec_unit);
                     residue_data.push((data.event_id, residue));
@@ -49,6 +54,54 @@ impl WplEngine {
             residue_data,
             missed_packets: miss_packets,
         })
+    }
+}
+
+pub(crate) fn enrich_record_with_tags(
+    record: Arc<DataRecord>,
+    tags: &wp_connector_api::Tags,
+) -> Arc<DataRecord> {
+    if tags.is_empty() {
+        return record;
+    }
+    let pairs = materialize_tags(tags);
+    if pairs.is_empty() {
+        return record;
+    }
+    // Avoid cloning when the Arc is unique
+    let mut enriched = match Arc::try_unwrap(record) {
+        Ok(inner) => inner,
+        Err(shared) => (*shared).clone(),
+    };
+    let mut appended = false;
+    for (key, value) in pairs {
+        if enriched.field(&key).is_none() {
+            enriched.append(DataField::from_chars(key, value));
+            appended = true;
+        }
+    }
+    if appended {
+        Arc::new(enriched)
+    } else {
+        Arc::new(enriched)
+    }
+}
+
+#[derive(Deserialize)]
+struct TagsSnapshot {
+    item: Vec<(String, String)>,
+}
+
+fn materialize_tags(tags: &wp_connector_api::Tags) -> Vec<(String, String)> {
+    if tags.is_empty() {
+        return Vec::new();
+    }
+    match serde_json::to_vec(tags)
+        .ok()
+        .and_then(|raw| serde_json::from_slice::<TagsSnapshot>(&raw).ok())
+    {
+        Some(snapshot) => snapshot.item,
+        None => Vec::new(),
     }
 }
 
@@ -70,6 +123,30 @@ mod tests {
             RawData::String(payload.to_string()),
             Arc::new(Tags::new()),
         )
+    }
+
+    fn build_event_with_tags(payload: &str, tag_pairs: &[(&str, &str)]) -> SourceEvent {
+        let mut tags = Tags::new();
+        for (key, value) in tag_pairs {
+            tags.set(*key, *value);
+        }
+        SourceEvent::new(
+            gen_pkg_id(),
+            Arc::new("test-src".to_string()),
+            RawData::String(payload.to_string()),
+            Arc::new(tags),
+        )
+    }
+
+    fn assert_chars_field(record: &DataRecord, key: &str, expected: &str) {
+        use wp_model_core::model::Value;
+        let field = record
+            .field(key)
+            .unwrap_or_else(|| panic!("missing field {key}"));
+        match field.get_value() {
+            Value::Chars(actual) => assert_eq!(actual, expected),
+            other => panic!("field {key} expected chars, got {:?}", other),
+        }
     }
 
     fn build_real_engine(rules: &[(&str, &str)]) -> WplEngine {
@@ -192,6 +269,35 @@ rule json_payload {
             .get("json_payload")
             .expect("missing json group");
         assert_eq!(json_pkg.len(), 1);
+    }
+
+    #[test]
+    fn batch_parse_package_enriches_records_with_tags() {
+        let mut engine = build_real_engine(&[("nginx_access", NGINX_RULE)]);
+        let option = ParseOption::default();
+        let event = build_event_with_tags(
+            NGINX_SAMPLE,
+            &[
+                ("env", "test"),
+                ("dev_src_ip", "10.0.0.1"),
+                ("access_source", "custom"),
+            ],
+        );
+
+        let parsed = engine
+            .batch_parse_package(vec![event], &option)
+            .expect("parse with tags");
+
+        let nginx_pkg = parsed
+            .sink_groups
+            .get("nginx_access")
+            .expect("missing nginx group");
+        assert_eq!(nginx_pkg.len(), 1);
+        let record = nginx_pkg.first().expect("missing record").data();
+
+        assert_chars_field(record, "env", "test");
+        assert_chars_field(record, "dev_src_ip", "10.0.0.1");
+        assert_chars_field(record, "access_source", "custom");
     }
 
     const MID_FAIL_RULE: &str = r#"

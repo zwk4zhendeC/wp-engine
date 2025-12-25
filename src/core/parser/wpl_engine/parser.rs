@@ -45,12 +45,13 @@ impl MultiParser {
                     wpl_line.hit_cnt += 1;
 
                     let wpl_key = wpl_line.wpl_key().to_string();
-                    let record = Arc::new(tdo_crate);
 
                     // 根据是否有残留数据返回不同的结果
                     if un_parsed.is_empty() || un_parsed.is_empty() {
+                        let record = Arc::new(tdo_crate);
                         return ProcessResult::Success { wpl_key, record };
                     } else {
+                        let record = Arc::new(tdo_crate);
                         return ProcessResult::Partial {
                             wpl_key,
                             record,

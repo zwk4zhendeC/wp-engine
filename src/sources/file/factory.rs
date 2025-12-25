@@ -187,3 +187,97 @@ fn align_to_next_line(path: &Path, offset: u64, file_size: u64) -> std::io::Resu
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::NamedTempFile;
+    use toml::map::Map as TomlMap;
+    use wp_connector_api::{SourceBuildCtx, SourceFactory, parammap_from_toml_map};
+
+    fn build_spec_with_instances(instances: Option<i64>) -> ResolvedSourceSpec {
+        let mut params = TomlMap::new();
+        params.insert("path".into(), toml::Value::String("/tmp/input.log".into()));
+        if let Some(value) = instances {
+            params.insert("instances".into(), toml::Value::Integer(value));
+        }
+        ResolvedSourceSpec {
+            name: "file_test".into(),
+            kind: "file".into(),
+            connector_id: String::new(),
+            params: parammap_from_toml_map(params),
+            tags: vec![],
+        }
+    }
+
+    #[test]
+    fn parse_instances_defaults_to_one() {
+        let spec = build_spec_with_instances(None);
+        assert_eq!(parse_instances(&spec), 1);
+    }
+
+    #[test]
+    fn parse_instances_clamps_to_max_limit() {
+        let over = build_spec_with_instances(Some((FILE_SOURCE_MAX_INSTANCES + 5) as i64));
+        assert_eq!(parse_instances(&over), FILE_SOURCE_MAX_INSTANCES);
+
+        let under = build_spec_with_instances(Some(0));
+        assert_eq!(parse_instances(&under), 1);
+    }
+
+    #[test]
+    fn compute_file_ranges_aligns_to_line_boundaries() {
+        let file = NamedTempFile::new().expect("temp file");
+        std::fs::write(file.path(), b"aaaa\nbbbb\nccccc\n").expect("write temp file");
+
+        let ranges = compute_file_ranges(file.path(), 3).expect("compute ranges");
+        assert_eq!(ranges, vec![(0, Some(10)), (10, None)]);
+    }
+
+    #[tokio::test]
+    async fn build_propagates_tags_into_metadata_and_events() {
+        let file = NamedTempFile::new().expect("temp file");
+        std::fs::write(file.path(), b"hello\nworld\n").expect("write temp file");
+        let expected_access = file.path().display().to_string();
+
+        let mut params = TomlMap::new();
+        params.insert(
+            "path".into(),
+            toml::Value::String(file.path().display().to_string()),
+        );
+        let spec = ResolvedSourceSpec {
+            name: "file_tagged".into(),
+            kind: "file".into(),
+            connector_id: String::new(),
+            params: parammap_from_toml_map(params),
+            tags: vec!["env:test".into(), "team:platform".into()],
+        };
+        let ctx = SourceBuildCtx::new(std::path::PathBuf::from("."));
+        let fac = FileSourceFactory;
+        let mut svc = fac
+            .build(&spec, &ctx)
+            .await
+            .expect("build tagged file source");
+
+        assert_eq!(svc.sources.len(), 1);
+        let mut handle = svc.sources.remove(0);
+        assert_eq!(handle.metadata.name, "file_tagged");
+        assert_eq!(handle.metadata.tags.get("env"), Some("test"));
+        assert_eq!(handle.metadata.tags.get("team"), Some("platform"));
+        assert_eq!(handle.metadata.tags.len(), 2);
+
+        let (_tx, rx) = async_broadcast::broadcast::<wp_connector_api::ControlEvent>(1);
+        handle.source.start(rx).await.expect("start file source");
+        let mut batch = handle.source.receive().await.expect("read batch");
+        assert!(!batch.is_empty());
+        let event = batch.pop().expect("one event");
+        assert_eq!(event.tags.get("env"), Some("test"));
+        assert_eq!(event.tags.get("team"), Some("platform"));
+        assert_eq!(
+            event.tags.get("access_source"),
+            Some(expected_access.as_str())
+        );
+        assert_eq!(event.tags.len(), 3);
+        handle.source.close().await.expect("close source");
+    }
+}

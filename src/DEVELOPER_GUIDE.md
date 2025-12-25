@@ -68,6 +68,7 @@
     tags = ["env:test"]
     params_override = { path = "./data/in_dat/gen.dat", encode = "text" }
     ```
+    > 注：自 v1.5.1 起，`tags` 中的键值会在解析成功后自动写入数据记录（字段名沿用标签 key；若记录内已有同名字段则保持原值），因此可直接在 Sink 端观察/过滤标签。
   - 示例（syslog）：
     ```toml
     [[sources]]
