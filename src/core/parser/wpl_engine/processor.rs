@@ -73,18 +73,12 @@ pub(crate) fn enrich_record_with_tags(
         Ok(inner) => inner,
         Err(shared) => (*shared).clone(),
     };
-    let mut appended = false;
     for (key, value) in pairs {
         if enriched.field(&key).is_none() {
             enriched.append(DataField::from_chars(key, value));
-            appended = true;
         }
     }
-    if appended {
-        Arc::new(enriched)
-    } else {
-        Arc::new(enriched)
-    }
+    Arc::new(enriched)
 }
 
 #[derive(Deserialize)]
