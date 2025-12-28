@@ -295,6 +295,11 @@ type = "dummy"
         assert!(e.contains("duplicate connector id"));
     }
 
+    use crate::connectors::ConnectorDef;
+    use crate::connectors::ParamMap;
+    use wp_connector_api::ConnectorDefProvider;
+    use wp_connector_api::SourceFactory;
+
     struct DummyFactory;
     #[allow(clippy::needless_lifetimes)]
     #[async_trait::async_trait]
@@ -315,6 +320,19 @@ type = "dummy"
             _ctx: &wp_connector_api::SourceBuildCtx,
         ) -> SourceResult<SourceSvcIns> {
             Err(SourceReason::from_conf("not used in validate test").to_err())
+        }
+    }
+
+    impl wp_connector_api::ConnectorDefProvider for DummyFactory {
+        fn source_def(&self) -> ConnectorDef {
+            ConnectorDef {
+                id: "dummy".into(),
+                kind: self.kind().into(),
+                scope: ConnectorScope::Source,
+                allow_override: vec!["a".into()],
+                default_params: ParamMap::new(),
+                origin: Some("test:dummy".into()),
+            }
         }
     }
 

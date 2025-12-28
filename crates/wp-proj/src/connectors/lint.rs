@@ -156,6 +156,8 @@ pub fn lint_rows_from_root<P: AsRef<Path>>(work_root: P) -> Vec<LintRow> {
 
 #[cfg(test)]
 mod tests {
+    use wp_connector_api::ParamMap;
+
     use super::*;
     use crate::test_utils::{temp_workdir, write_file};
 
@@ -172,7 +174,7 @@ mod tests {
             kind: "file".into(),
             scope: ConnectorScope::Source,
             allow_override: vec![],
-            default_params: toml::value::Table::new(),
+            default_params: ParamMap::new(),
             origin: None,
         };
         let (sev, msg, silent) = validate_connector(Side::Sources, &def, Some("file"));

@@ -365,6 +365,8 @@ impl Sources {
 #[cfg(test)]
 mod tests {
 
+    use serde_json::json;
+
     use super::*;
 
     #[test]
@@ -388,9 +390,7 @@ mod tests {
         };
         // first insert default file source manually with custom param
         let mut custom = source_builders::file_source(DEFAULT_FILE_SOURCE_KEY, "custom.dat");
-        custom
-            .params
-            .insert("base".into(), toml::Value::String("custom_base".into()));
+        custom.params.insert("base".into(), json!("custom_base"));
         config.sources.push(custom);
 
         Sources::ensure_source_exists(
