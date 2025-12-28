@@ -3,7 +3,7 @@ use orion_conf::{ErrorOwe, ErrorWith};
 use std::fs;
 use std::path::Path;
 use toml::Value;
-use wp_conf::connectors::{ConnectorDef, ConnectorScope};
+use wp_conf::connectors::{ConnectorDef, ConnectorScope, param_map_to_table};
 use wp_error::run_error::RunResult;
 
 pub fn init_definitions<P: AsRef<Path>>(work_root: P) -> RunResult<()> {
@@ -59,7 +59,10 @@ fn connector_to_value(def: &ConnectorDef) -> Value {
         entry.insert("allow_override".into(), Value::Array(arr));
     }
     if !def.default_params.is_empty() {
-        entry.insert("params".into(), Value::Table(def.default_params.clone()));
+        entry.insert(
+            "params".into(),
+            Value::Table(param_map_to_table(&def.default_params)),
+        );
     }
     Value::Table(entry)
 }
@@ -122,9 +125,9 @@ mod tests {
             scope: ConnectorScope::Sink,
             allow_override: vec!["base".into()],
             default_params: {
-                let mut t = toml::value::Table::new();
-                t.insert("base".into(), Value::String("./out".into()));
-                t
+                let mut p = wp_connector_api::ParamMap::new();
+                p.insert("base".into(), serde_json::Value::String("./out".into()));
+                p
             },
             origin: None,
         };

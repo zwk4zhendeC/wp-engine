@@ -573,10 +573,10 @@ mod tests {
         let rescue_root = temp.path().join("rescue_root");
         std::fs::create_dir_all(&rescue_root)?;
 
-        let mut params = toml::value::Table::new();
+        let mut params = wp_connector_api::ParamMap::new();
         params.insert(
             "path".into(),
-            toml::Value::String(rescue_root.join("dummy.dat").display().to_string()),
+            serde_json::Value::String(rescue_root.join("dummy.dat").display().to_string()),
         );
 
         let conf = SinkInstanceConf::new_type(

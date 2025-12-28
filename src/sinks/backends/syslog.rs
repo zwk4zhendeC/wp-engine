@@ -1,7 +1,8 @@
 use async_trait::async_trait;
+use orion_conf::ErrorOwe;
+use serde_json::json;
 use std::str::FromStr;
-use toml::value::{Table, Value};
-use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider, ConnectorScope};
+use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider, ConnectorScope, param_map_to_table};
 use wp_conf::structure::Protocol as ConfProtocol;
 use wp_conf::structure::SyslogSinkConf as OutSyslog;
 use wp_connector_api::SinkResult;
@@ -54,14 +55,11 @@ impl SyslogSinkSpec {
             .unwrap_or("udp");
         let proto =
             ConfProtocol::from_str(&protocol.to_ascii_lowercase()).unwrap_or(ConfProtocol::UDP);
-        let mut tbl = toml::map::Map::new();
-        tbl.insert("addr".to_string(), toml::Value::String(addr.to_string()));
-        tbl.insert("port".to_string(), toml::Value::Integer(port));
-        tbl.insert(
-            "protocol".to_string(),
-            toml::Value::String(proto.to_string()),
-        );
-        let toml_str = toml::to_string(&toml::Value::Table(tbl))?;
+        let mut params = wp_connector_api::ParamMap::new();
+        params.insert("addr".to_string(), json!(addr));
+        params.insert("port".to_string(), json!(port));
+        params.insert("protocol".to_string(), json!(proto.to_string()));
+        let toml_str = toml::to_string(&param_map_to_table(&params))?;
         let conf: OutSyslog = toml::from_str(&toml_str)?;
         let app_name = spec
             .params
@@ -290,15 +288,12 @@ impl SinkFactory for SyslogFactory {
     fn kind(&self) -> &'static str {
         "syslog"
     }
-    fn validate_spec(&self, spec: &ResolvedSinkSpec) -> anyhow::Result<()> {
-        SyslogSinkSpec::from_resolved(spec).map(|_| ())
+    fn validate_spec(&self, spec: &ResolvedSinkSpec) -> SinkResult<()> {
+        SyslogSinkSpec::from_resolved(spec).owe_conf()?;
+        Ok(())
     }
-    async fn build(
-        &self,
-        spec: &ResolvedSinkSpec,
-        _ctx: &SinkBuildCtx,
-    ) -> anyhow::Result<SinkHandle> {
-        let resolved = SyslogSinkSpec::from_resolved(spec)?;
+    async fn build(&self, spec: &ResolvedSinkSpec, _ctx: &SinkBuildCtx) -> SinkResult<SinkHandle> {
+        let resolved = SyslogSinkSpec::from_resolved(spec).owe_conf()?;
         let proto = resolved.protocol();
         let target = resolved.target_addr();
         // Log resolved target to aid diagnosing mismatched params
@@ -307,9 +302,13 @@ impl SinkFactory for SyslogFactory {
 
         // Build runtime sink directly; pass rate_limit_rps to TCP writer
         let runtime = match proto {
-            ConfProtocol::UDP => SyslogSink::udp(target.as_str(), Some(app_name)).await?,
+            ConfProtocol::UDP => SyslogSink::udp(target.as_str(), Some(app_name))
+                .await
+                .owe_res()?,
             ConfProtocol::TCP => {
-                SyslogSink::tcp(target.as_str(), Some(app_name), _ctx.rate_limit_rps).await?
+                SyslogSink::tcp(target.as_str(), Some(app_name), _ctx.rate_limit_rps)
+                    .await
+                    .owe_res()?
             }
         };
         Ok(SinkHandle::new(Box::new(runtime)))
@@ -318,13 +317,13 @@ impl SinkFactory for SyslogFactory {
 
 impl ConnectorDefProvider for SyslogFactory {
     fn sink_def(&self) -> ConnectorDef {
-        let mut params = Table::new();
-        params.insert("addr".into(), Value::String("127.0.0.1".into()));
-        params.insert("port".into(), Value::Integer(1514));
-        params.insert("protocol".into(), Value::String("udp".into()));
-        params.insert("strip_header".into(), Value::Boolean(true));
-        params.insert("attach_meta_tags".into(), Value::Boolean(true));
-        params.insert("tcp_recv_bytes".into(), Value::Integer(10_485_760));
+        let mut params = wp_connector_api::ParamMap::new();
+        params.insert("addr".into(), json!("127.0.0.1"));
+        params.insert("port".into(), json!(1514));
+        params.insert("protocol".into(), json!("udp"));
+        params.insert("strip_header".into(), json!(true));
+        params.insert("attach_meta_tags".into(), json!(true));
+        params.insert("tcp_recv_bytes".into(), json!(10_485_760));
         ConnectorDef {
             id: "syslog_sink".into(),
             kind: self.kind().into(),

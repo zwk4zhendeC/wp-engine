@@ -1,6 +1,7 @@
 use async_trait::async_trait;
-use toml::value::{Table, Value};
-use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider, ConnectorScope};
+use orion_conf::ErrorOwe;
+use serde_json::json;
+use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider, ConnectorScope, ParamMap};
 use wp_connector_api::SinkResult;
 use wp_connector_api::{
     AsyncCtrl, AsyncRawDataSink, AsyncRecordSink, SinkBuildCtx, SinkFactory, SinkHandle,
@@ -246,29 +247,32 @@ impl SinkFactory for TcpFactory {
     fn kind(&self) -> &'static str {
         "tcp"
     }
-    fn validate_spec(&self, spec: &ResolvedSinkSpec) -> anyhow::Result<()> {
-        TcpSinkSpec::from_resolved(spec).map(|_| ())
+    fn validate_spec(&self, spec: &ResolvedSinkSpec) -> SinkResult<()> {
+        TcpSinkSpec::from_resolved(spec).owe_conf()?;
+        Ok(())
     }
     async fn build(
         &self,
         spec: &ResolvedSinkSpec,
         ctx: &SinkBuildCtx,
-    ) -> anyhow::Result<SinkHandle> {
-        let resolved = TcpSinkSpec::from_resolved(spec)?;
+    ) -> SinkResult<SinkHandle> {
+        let resolved = TcpSinkSpec::from_resolved(spec).owe_conf()?;
         // Internal defaults: no ACK; auto-drain at shutdown.
         // 限速目标：由 SinkBuildCtx 统一传入，TcpSink 内部据此构建 SendPolicy。
-        let runtime = TcpSink::connect(&resolved, ctx.rate_limit_rps).await?;
+        let runtime = TcpSink::connect(&resolved, ctx.rate_limit_rps)
+            .await
+            .owe_res()?;
         Ok(SinkHandle::new(Box::new(runtime)))
     }
 }
 
 impl ConnectorDefProvider for TcpFactory {
     fn sink_def(&self) -> ConnectorDef {
-        let mut params = Table::new();
-        params.insert("addr".into(), Value::String("127.0.0.1".into()));
-        params.insert("port".into(), Value::Integer(9000));
-        params.insert("framing".into(), Value::String("line".into()));
-        params.insert("max_backoff".into(), Value::Boolean(false));
+        let mut params = ParamMap::new();
+        params.insert("addr".into(), json!("127.0.0.1"));
+        params.insert("port".into(), json!(9000));
+        params.insert("framing".into(), json!("line"));
+        params.insert("max_backoff".into(), json!(false));
         ConnectorDef {
             id: "tcp_sink".into(),
             kind: self.kind().into(),

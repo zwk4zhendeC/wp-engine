@@ -1,3 +1,4 @@
+use wp_conf::connectors::{ParamMap, param_value_from_toml};
 use wp_conf::sources::types::SourceItem;
 
 /// Builder pattern for constructing SourceItem instances
@@ -16,7 +17,7 @@ pub struct SourceItemBuilder {
     /// List of tags for categorization
     tags: Vec<String>,
     /// Configuration parameters as key-value pairs
-    params: toml::value::Table,
+    params: ParamMap,
 }
 
 #[allow(dead_code)]
@@ -38,7 +39,7 @@ impl SourceItemBuilder {
             connect: connect.to_string(),
             enable: Some(true), // Default to enabled
             tags: vec![],
-            params: toml::value::Table::new(),
+            params: ParamMap::new(),
         }
     }
 
@@ -77,7 +78,8 @@ impl SourceItemBuilder {
     /// * `key` - Parameter name
     /// * `value` - TOML value
     pub fn param(mut self, key: &str, value: toml::Value) -> Self {
-        self.params.insert(key.to_string(), value);
+        self.params
+            .insert(key.to_string(), param_value_from_toml(&value));
         self
     }
 
@@ -88,7 +90,7 @@ impl SourceItemBuilder {
     /// * `value` - String value
     pub fn param_str(mut self, key: &str, value: &str) -> Self {
         self.params
-            .insert(key.to_string(), toml::Value::String(value.to_string()));
+            .insert(key.to_string(), serde_json::Value::String(value.to_string()));
         self
     }
 
@@ -98,8 +100,10 @@ impl SourceItemBuilder {
     /// * `key` - Parameter name
     /// * `value` - Integer value
     pub fn param_int(mut self, key: &str, value: i64) -> Self {
-        self.params
-            .insert(key.to_string(), toml::Value::Integer(value));
+        self.params.insert(
+            key.to_string(),
+            serde_json::Value::Number(serde_json::Number::from(value)),
+        );
         self
     }
 
@@ -215,6 +219,6 @@ mod tests {
     fn syslog_builder_respects_protocol() {
         let item = source_builders::syslog_udp_source("syslog_1", "0.0.0.0", 9000);
         assert_eq!(item.params.get("protocol").unwrap().as_str(), Some("udp"));
-        assert_eq!(item.params.get("port").unwrap().as_integer(), Some(9000));
+        assert_eq!(item.params.get("port").unwrap().as_i64(), Some(9000));
     }
 }

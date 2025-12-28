@@ -2,9 +2,9 @@ use super::source::{FileEncoding, FileSource};
 use async_trait::async_trait;
 use orion_conf::UvsConfFrom;
 use orion_error::ToStructError;
+use serde_json::json;
 use std::path::Path;
-use toml::value::{Table, Value};
-use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider, ConnectorScope};
+use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider, ConnectorScope, ParamMap};
 use wp_connector_api::{
     SourceBuildCtx, SourceFactory, SourceHandle, SourceMeta, SourceReason, SourceResult,
     SourceSpec as ResolvedSourceSpec, SourceSvcIns,
@@ -127,10 +127,10 @@ impl SourceFactory for FileSourceFactory {
 
 impl ConnectorDefProvider for FileSourceFactory {
     fn source_def(&self) -> ConnectorDef {
-        let mut params = Table::new();
-        params.insert("base".into(), Value::String("./data/in_dat".into()));
-        params.insert("file".into(), Value::String("gen.dat".into()));
-        params.insert("encode".into(), Value::String("text".into()));
+        let mut params = ParamMap::new();
+        params.insert("base".into(), json!("./data/in_dat"));
+        params.insert("file".into(), json!("gen.dat"));
+        params.insert("encode".into(), json!("text"));
         ConnectorDef {
             id: "file_src".into(),
             kind: self.kind().into(),

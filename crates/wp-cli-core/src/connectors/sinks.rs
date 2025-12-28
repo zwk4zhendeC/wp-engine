@@ -5,7 +5,12 @@ use orion_conf::ToStructError;
 use orion_conf::error::{ConfIOReason, OrionConfResult};
 use orion_error::{ErrorOwe, ErrorWith, UvsValidationFrom};
 
-use wp_conf::connectors::{ConnectorScope, load_connector_defs_from_dir};
+use wp_conf::connectors::{
+    ConnectorScope,
+    ParamMap,
+    load_connector_defs_from_dir,
+    param_map_to_table,
+};
 use wp_conf::sinks::build_route_conf_from;
 use wp_conf::sinks::io::find_connectors_base_dir;
 use wp_conf::sinks::{ConnectorRec, RouteFile};
@@ -268,9 +273,9 @@ pub fn route_table(
 }
 
 /// Render params as single-line TOML for display; avoid guessing semantics.
-fn params_one_line(params: &toml::value::Table) -> String {
-    let val = toml::Value::Table(params.clone());
-    match toml::to_string(&val) {
+fn params_one_line(params: &ParamMap) -> String {
+    let table = param_map_to_table(params);
+    match toml::to_string(&table) {
         Ok(s) => s.replace(['\n', '\t'], " ").trim().to_string(),
         Err(_) => format!("{:?}", params),
     }

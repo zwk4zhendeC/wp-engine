@@ -3,6 +3,8 @@ use std::path::{Path, PathBuf};
 use orion_conf::TomlIO;
 use orion_conf::error::{ConfIOReason, OrionConfResult};
 use orion_error::{ErrorOwe, ErrorWith, ToStructError, UvsValidationFrom};
+use serde_json::json;
+use wp_conf::connectors::{ParamMap, param_value_from_toml};
 use wp_conf::sinks::ConnectorRec;
 use wp_conf::sinks::load_connectors_for;
 use wp_conf::structure::SinkInstanceConf;
@@ -55,12 +57,12 @@ impl WarpConf {
             let has_explicit = merged.contains_key("max_backoff");
             if unlimited {
                 if !has_explicit {
-                    merged.insert("max_backoff".into(), toml::Value::Boolean(true));
+                    merged.insert("max_backoff".into(), json!(true));
                 }
             } else {
                 // 限速场景强制关闭：即使用户显式设置也置为 false，保证 maybe_backoff 仅在无限速时启用
                 if has_explicit {
-                    merged.insert("max_backoff".into(), toml::Value::Boolean(false));
+                    merged.insert("max_backoff".into(), json!(false));
                 }
             }
         }
@@ -105,7 +107,7 @@ impl WarpConf {
         conn: &wp_conf::sinks::ConnectorRec,
         override_tbl: &toml::value::Table,
         conn_id: &str,
-    ) -> OrionConfResult<toml::value::Table> {
+    ) -> OrionConfResult<ParamMap> {
         let mut merged = conn.default_params.clone();
         for (k, v) in override_tbl.iter() {
             if k == "params" || k == "params_override" {
@@ -125,13 +127,13 @@ impl WarpConf {
                 ))
                 .err_result();
             }
-            merged.insert(k.clone(), v.clone());
+            merged.insert(k.clone(), param_value_from_toml(v));
         }
         Ok(merged)
     }
 
     // 2.3) 选择输出格式：文件类遵循 params.fmt，其它统一 Json
-    fn select_text_fmt(kind: &str, merged: &toml::value::Table) -> TextFmt {
+    fn select_text_fmt(kind: &str, merged: &ParamMap) -> TextFmt {
         if kind == "file" {
             let s = merged.get("fmt").and_then(|v| v.as_str()).unwrap_or("json");
             TextFmt::from(s)

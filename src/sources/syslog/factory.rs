@@ -9,17 +9,17 @@ use super::udp_source::UdpSyslogSource;
 use crate::sources::tcp::{FramingMode, TcpAcceptor, TcpSource};
 use orion_conf::UvsConfFrom;
 use orion_error::ToStructError;
+use serde_json::json;
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
-use toml::value::{Table, Value};
 use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider, ConnectorScope};
 use wp_conf::limits::tcp_reader_batch_channel_cap;
-use wp_connector_api::SourceReason;
 use wp_connector_api::{
     AcceptorHandle, SourceBuildCtx, SourceFactory, SourceHandle, SourceMeta, SourceResult,
     SourceSvcIns,
 };
+use wp_connector_api::{ParamMap, SourceReason};
 use wp_data_model::tags::parse_tags;
 use wp_model_core::model::TagSet;
 
@@ -132,13 +132,13 @@ impl SourceFactory for SyslogSourceFactory {
 
 impl ConnectorDefProvider for SyslogSourceFactory {
     fn source_def(&self) -> ConnectorDef {
-        let mut params = Table::new();
-        params.insert("addr".into(), Value::String("0.0.0.0".into()));
-        params.insert("port".into(), Value::Integer(514));
-        params.insert("protocol".into(), Value::String("udp".into()));
-        params.insert("tcp_recv_bytes".into(), Value::Integer(10_485_760));
-        params.insert("header_mode".into(), Value::String("strip".into()));
-        params.insert("prefer_newline".into(), Value::Boolean(false));
+        let mut params = ParamMap::new();
+        params.insert("addr".into(), json!("0.0.0.0"));
+        params.insert("port".into(), json!(514));
+        params.insert("protocol".into(), json!("udp"));
+        params.insert("tcp_recv_bytes".into(), json!(10_485_760));
+        params.insert("header_mode".into(), json!("strip"));
+        params.insert("prefer_newline".into(), json!(false));
         ConnectorDef {
             id: "syslog_src".into(),
             kind: self.kind().into(),

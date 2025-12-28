@@ -2,6 +2,7 @@ use crate::fsutils::{count_lines_file, resolve_path};
 use crate::types::Ctx;
 use serde::Serialize;
 use std::collections::BTreeMap;
+use wp_conf::connectors::{ParamMap, param_value_from_toml};
 use wp_conf::engine::EngineConfig;
 
 // Minimal local model to parse file sources from wpsrc.toml
@@ -35,14 +36,14 @@ fn load_connectors_map(base_dir: &std::path::Path) -> Option<BTreeMap<String, Sr
 }
 
 fn merge_params(
-    base: &toml::value::Table,
+    base: &ParamMap,
     override_tbl: &toml::value::Table,
     allow: &[String],
-) -> toml::value::Table {
+) -> ParamMap {
     let mut out = base.clone();
     for (k, v) in override_tbl.iter() {
         if allow.iter().any(|x| x == k) {
-            out.insert(k.clone(), v.clone());
+            out.insert(k.clone(), param_value_from_toml(v));
         }
     }
     out

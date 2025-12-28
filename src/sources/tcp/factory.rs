@@ -1,7 +1,7 @@
 use orion_conf::UvsConfFrom;
 use orion_error::ToStructError;
-use toml::value::{Table, Value};
-use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider, ConnectorScope};
+use serde_json::json;
+use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider, ConnectorScope, ParamMap};
 use wp_connector_api::SourceReason;
 use wp_connector_api::{
     AcceptorHandle, SourceBuildCtx, SourceFactory, SourceHandle, SourceMeta, SourceResult,
@@ -103,13 +103,13 @@ impl SourceFactory for TcpSourceFactory {
 
 impl ConnectorDefProvider for TcpSourceFactory {
     fn source_def(&self) -> ConnectorDef {
-        let mut params = Table::new();
-        params.insert("addr".into(), Value::String("0.0.0.0".into()));
-        params.insert("port".into(), Value::Integer(9000));
-        params.insert("framing".into(), Value::String("auto".into()));
-        params.insert("tcp_recv_bytes".into(), Value::Integer(256_000));
-        params.insert("prefer_newline".into(), Value::Boolean(false));
-        params.insert("instances".into(), Value::Integer(1));
+        let mut params = ParamMap::new();
+        params.insert("addr".into(), json!("0.0.0.0"));
+        params.insert("port".into(), json!(9000));
+        params.insert("framing".into(), json!("auto"));
+        params.insert("tcp_recv_bytes".into(), json!(256_000));
+        params.insert("prefer_newline".into(), json!(false));
+        params.insert("instances".into(), json!(1));
         ConnectorDef {
             id: "tcp_src".into(),
             kind: self.kind().into(),
