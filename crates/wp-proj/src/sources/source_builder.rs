@@ -89,8 +89,10 @@ impl SourceItemBuilder {
     /// * `key` - Parameter name
     /// * `value` - String value
     pub fn param_str(mut self, key: &str, value: &str) -> Self {
-        self.params
-            .insert(key.to_string(), serde_json::Value::String(value.to_string()));
+        self.params.insert(
+            key.to_string(),
+            serde_json::Value::String(value.to_string()),
+        );
         self
     }
 

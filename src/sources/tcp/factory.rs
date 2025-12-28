@@ -130,7 +130,7 @@ impl ConnectorDefProvider for TcpSourceFactory {
 
 /// 注册 TCP 源工厂（集中由引擎启动入口调用）
 pub fn register_tcp_factory() {
-    crate::connectors::registry::register_source_ex_factory(TcpSourceFactory);
+    crate::connectors::registry::register_source_factory(TcpSourceFactory);
 }
 
 #[cfg(test)]

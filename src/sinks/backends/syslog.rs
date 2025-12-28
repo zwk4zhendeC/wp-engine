@@ -276,7 +276,7 @@ impl AsyncRawDataSink for SyslogSink {
 }
 
 pub fn register_factory_syslog() {
-    crate::connectors::registry::register_sink_ex_factory(SyslogFactory);
+    crate::connectors::registry::register_sink_factory(SyslogFactory);
 }
 
 // ---- Runtime factory from resolved route (for future decoupling) ----

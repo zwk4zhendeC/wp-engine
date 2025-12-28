@@ -56,10 +56,10 @@ impl TcpSinkSpec {
     }
 
     fn ensure_bool(spec: &ResolvedSinkSpec, key: &str) -> AnyResult<()> {
-        if let Some(v) = spec.params.get(key) {
-            if v.as_bool().is_none() {
-                anyhow::bail!("tcp.{key} must be a boolean");
-            }
+        if let Some(v) = spec.params.get(key)
+            && v.as_bool().is_none()
+        {
+            anyhow::bail!("tcp.{key} must be a boolean");
         }
         Ok(())
     }
@@ -251,11 +251,7 @@ impl SinkFactory for TcpFactory {
         TcpSinkSpec::from_resolved(spec).owe_conf()?;
         Ok(())
     }
-    async fn build(
-        &self,
-        spec: &ResolvedSinkSpec,
-        ctx: &SinkBuildCtx,
-    ) -> SinkResult<SinkHandle> {
+    async fn build(&self, spec: &ResolvedSinkSpec, ctx: &SinkBuildCtx) -> SinkResult<SinkHandle> {
         let resolved = TcpSinkSpec::from_resolved(spec).owe_conf()?;
         // Internal defaults: no ACK; auto-drain at shutdown.
         // 限速目标：由 SinkBuildCtx 统一传入，TcpSink 内部据此构建 SendPolicy。

@@ -35,11 +35,7 @@ fn load_connectors_map(base_dir: &std::path::Path) -> Option<BTreeMap<String, Sr
     wp_conf::sources::load_connectors_for(base_dir).ok()
 }
 
-fn merge_params(
-    base: &ParamMap,
-    override_tbl: &toml::value::Table,
-    allow: &[String],
-) -> ParamMap {
+fn merge_params(base: &ParamMap, override_tbl: &toml::value::Table, allow: &[String]) -> ParamMap {
     let mut out = base.clone();
     for (k, v) in override_tbl.iter() {
         if allow.iter().any(|x| x == k) {

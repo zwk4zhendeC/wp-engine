@@ -97,7 +97,7 @@ impl SinkInstanceConf {
             core: wp_specs::CoreSinkSpec {
                 name,
                 kind,
-                params: params,
+                params,
                 filter,
                 tags: Vec::new(),
             },

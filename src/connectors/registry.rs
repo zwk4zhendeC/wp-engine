@@ -6,11 +6,11 @@ use once_cell::sync::OnceCell;
 use std::collections::HashMap;
 use std::panic::Location;
 use std::sync::{Arc, RwLock};
-use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider};
+use wp_conf::connectors::ConnectorDef;
 use wp_connector_api::{SinkFactory, SourceFactory};
 
-type SinkRec = (Arc<dyn SinkExFactory>, &'static Location<'static>);
-type SrcRec = (Arc<dyn SourceExFactory>, &'static Location<'static>);
+type SinkRec = (Arc<dyn SinkFactory>, &'static Location<'static>);
+type SrcRec = (Arc<dyn SourceFactory>, &'static Location<'static>);
 type SinkReg = RwLock<HashMap<String, SinkRec>>;
 type SrcReg = RwLock<HashMap<String, SrcRec>>;
 static SINKS: OnceCell<SinkReg> = OnceCell::new();
@@ -23,20 +23,14 @@ fn src_reg() -> &'static SrcReg {
     SRCS.get_or_init(|| RwLock::new(HashMap::new()))
 }
 
-pub trait SinkExFactory: SinkFactory + ConnectorDefProvider {}
-impl<T> SinkExFactory for T where T: SinkFactory + ConnectorDefProvider {}
-
-pub trait SourceExFactory: SourceFactory + ConnectorDefProvider {}
-impl<T> SourceExFactory for T where T: SourceFactory + ConnectorDefProvider {}
-
 // ---------- Sink ----------
 #[track_caller]
-pub fn register_sink_ex_factory<F>(f: F)
+pub fn register_sink_factory<F>(f: F)
 where
-    F: SinkExFactory,
+    F: SinkFactory,
 {
     let base: Arc<F> = Arc::new(f);
-    let ex_arc: Arc<dyn SinkExFactory> = base.clone();
+    let ex_arc: Arc<dyn SinkFactory> = base.clone();
     let kind = ex_arc.kind().to_string();
     if let Ok(mut w) = sink_reg().write() {
         w.insert(kind, (ex_arc.clone(), Location::caller()));
@@ -67,12 +61,12 @@ pub fn registered_sink_defs() -> Vec<ConnectorDef> {
 
 // ---------- Source ----------
 #[track_caller]
-pub fn register_source_ex_factory<F>(f: F)
+pub fn register_source_factory<F>(f: F)
 where
-    F: SourceExFactory,
+    F: SourceFactory,
 {
     let base: Arc<F> = Arc::new(f);
-    let ex_arc: Arc<dyn SourceExFactory> = base.clone();
+    let ex_arc: Arc<dyn SourceFactory> = base.clone();
     let kind = ex_arc.kind().to_string();
     if let Ok(mut w) = src_reg().write() {
         w.insert(kind, (ex_arc.clone(), Location::caller()));

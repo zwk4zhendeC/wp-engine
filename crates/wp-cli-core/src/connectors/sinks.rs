@@ -6,10 +6,7 @@ use orion_conf::error::{ConfIOReason, OrionConfResult};
 use orion_error::{ErrorOwe, ErrorWith, UvsValidationFrom};
 
 use wp_conf::connectors::{
-    ConnectorScope,
-    ParamMap,
-    load_connector_defs_from_dir,
-    param_map_to_table,
+    ConnectorScope, ParamMap, load_connector_defs_from_dir, param_map_to_table,
 };
 use wp_conf::sinks::build_route_conf_from;
 use wp_conf::sinks::io::find_connectors_base_dir;

@@ -143,7 +143,7 @@ impl ConnectorDefProvider for FileSourceFactory {
 }
 
 pub fn register_factory_only() {
-    crate::connectors::registry::register_source_ex_factory(FileSourceFactory);
+    crate::connectors::registry::register_source_factory(FileSourceFactory);
 }
 
 fn compute_file_ranges(path: &Path, instances: usize) -> std::io::Result<Vec<(u64, Option<u64>)>> {

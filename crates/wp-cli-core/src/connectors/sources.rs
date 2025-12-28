@@ -5,10 +5,7 @@ use orion_conf::TomlIO;
 use orion_conf::error::{ConfIOReason, OrionConfResult};
 use orion_error::{ToStructError, UvsValidationFrom};
 use wp_conf::connectors::{
-    ConnectorScope,
-    ParamMap,
-    load_connector_defs_from_dir,
-    param_map_to_table,
+    ConnectorScope, ParamMap, load_connector_defs_from_dir, param_map_to_table,
 };
 use wp_conf::sources::{SourceConnector, WpSourcesConfig, find_connectors_dir};
 

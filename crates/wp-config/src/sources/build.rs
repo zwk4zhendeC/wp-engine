@@ -297,7 +297,6 @@ type = "dummy"
 
     use crate::connectors::ConnectorDef;
     use crate::connectors::ParamMap;
-    use wp_connector_api::ConnectorDefProvider;
     use wp_connector_api::SourceFactory;
 
     struct DummyFactory;

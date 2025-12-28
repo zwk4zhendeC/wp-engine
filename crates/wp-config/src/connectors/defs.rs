@@ -17,7 +17,9 @@ pub fn param_value_from_toml(value: &toml::Value) -> JsonValue {
             .unwrap_or(JsonValue::Null),
         toml::Value::Boolean(b) => JsonValue::Bool(*b),
         toml::Value::Datetime(dt) => JsonValue::String(dt.to_string()),
-        toml::Value::Array(arr) => JsonValue::Array(arr.iter().map(param_value_from_toml).collect()),
+        toml::Value::Array(arr) => {
+            JsonValue::Array(arr.iter().map(param_value_from_toml).collect())
+        }
         toml::Value::Table(tab) => JsonValue::Object(
             tab.iter()
                 .map(|(k, v)| (k.clone(), param_value_from_toml(v)))

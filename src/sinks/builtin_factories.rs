@@ -137,11 +137,11 @@ impl ConnectorDefProvider for TestRescueFactory {
 // fast_file 工厂已移除
 
 pub fn register_builtin_factories() {
-    crate::connectors::registry::register_sink_ex_factory(BlackHoleFactory);
-    crate::connectors::registry::register_sink_ex_factory(FileFactory);
-    crate::connectors::registry::register_sink_ex_factory(SyslogFactory);
-    crate::connectors::registry::register_sink_ex_factory(TcpFactory);
-    crate::connectors::registry::register_sink_ex_factory(TestRescueFactory);
+    crate::connectors::registry::register_sink_factory(BlackHoleFactory);
+    crate::connectors::registry::register_sink_factory(FileFactory);
+    crate::connectors::registry::register_sink_factory(SyslogFactory);
+    crate::connectors::registry::register_sink_factory(TcpFactory);
+    crate::connectors::registry::register_sink_factory(TestRescueFactory);
 }
 
 pub fn builtin_sink_defs() -> Vec<ConnectorDef> {
@@ -162,7 +162,6 @@ pub fn make_blackhole_sink() -> Box<dyn wp_connector_api::AsyncSink> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use toml::value::{Table, Value};
     use wp_connector_api::{AsyncRawDataSink, AsyncRecordSink, SinkFactory};
 
     #[tokio::test(flavor = "multi_thread")]
