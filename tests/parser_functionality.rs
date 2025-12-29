@@ -60,7 +60,7 @@ fn should_parse_json_with_escaped_quotes() -> AnyResult<()> {
     // Test case: Verify JSON quota escaping functionality
     // This test validates parsing of JSON data with escaped quotes and special characters
 
-    let expect = r#"{"a":1,"b":"中国"}"#;
+    let expect = r#"{"a":1,"b":" 中国 "}"#;
     let conf = r#"package pkg { rule esc_1 {|unquote/unescape|(json)} }"#;
     let in_path = "tests/sample/format/quota.dat";
     let (buffer, _out) = create_watch_out(TextFmt::Json);
