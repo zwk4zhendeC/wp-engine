@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use super::{init::InitMode, Connectors, Oml, ProjectPaths, Sinks, Sources, Wpl};
+use super::{Connectors, Oml, ProjectPaths, Sinks, Sources, Wpl, init::PrjScope};
 use crate::{
     models::knowledge::Knowledge, sinks::clean_outputs, wparse::WParseManager, wpgen::WpGenManager,
 };
@@ -68,14 +68,14 @@ impl WarpProject {
     }
 
     /// 静态初始化：创建并初始化完整项目
-    pub fn init<P: AsRef<Path>>(work_root: P, mode: InitMode) -> RunResult<Self> {
+    pub fn init<P: AsRef<Path>>(work_root: P, mode: PrjScope) -> RunResult<Self> {
         let mut project = Self::build(work_root.as_ref());
         project.init_components(mode)?;
         Ok(project)
     }
 
     /// 静态加载：基于现有结构执行校验加载
-    pub fn load<P: AsRef<Path>>(work_root: P, mode: InitMode) -> RunResult<Self> {
+    pub fn load<P: AsRef<Path>>(work_root: P, mode: PrjScope) -> RunResult<Self> {
         let mut project = Self::build(work_root.as_ref());
         project.load_components(mode)?;
         Ok(project)

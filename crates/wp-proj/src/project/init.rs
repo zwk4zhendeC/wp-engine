@@ -5,8 +5,8 @@ use orion_conf::{ErrorOwe, ToStructError, TomlIO};
 use orion_error::{UvsConfFrom, UvsValidationFrom};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use wp_conf::{engine::EngineConfig, generator::wpgen::WpGenConfig};
 use wp_conf::paths::{OUT_FILE_PATH, RESCURE_FILE_PATH, SRC_FILE_PATH};
+use wp_conf::{engine::EngineConfig, generator::wpgen::WpGenConfig};
 use wp_engine::facade::config::WPARSE_LOG_PATH;
 use wp_error::{RunError, RunReason};
 //use wp_engine::orchestrator::config::models::warp::core::EngineConfig;
@@ -24,7 +24,7 @@ const TOPOLOGY_SOURCES_DIR: &str = "topology/sources";
 const TOPOLOGY_SINKS_DIR: &str = "topology/sinks";
 
 #[derive(PartialEq, Eq, Debug, Clone)]
-pub enum InitMode {
+pub enum PrjScope {
     Full,
     Normal,
     Model,
@@ -32,23 +32,23 @@ pub enum InitMode {
     Conf,
     Data,
 }
-impl InitMode {
+impl PrjScope {
     pub fn enable_connector(&self) -> bool {
-        *self == InitMode::Full
+        *self == PrjScope::Full
     }
     pub fn enable_model(&self) -> bool {
         //*self == InitMode::Model || *self == InitMode::Full
-        matches!(self, InitMode::Model | InitMode::Full | InitMode::Normal)
+        matches!(self, PrjScope::Model | PrjScope::Full | PrjScope::Normal)
     }
     pub fn enable_conf(&self) -> bool {
-        matches!(self, InitMode::Conf | InitMode::Full | InitMode::Normal)
+        matches!(self, PrjScope::Conf | PrjScope::Full | PrjScope::Normal)
     }
     pub fn enable_topology(&self) -> bool {
-        matches!(self, InitMode::Topology | InitMode::Full | InitMode::Normal)
+        matches!(self, PrjScope::Topology | PrjScope::Full | PrjScope::Normal)
     }
 }
 
-impl FromStr for InitMode {
+impl FromStr for PrjScope {
     type Err = RunError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -76,7 +76,7 @@ impl WarpProject {
     }
 
     /// 完整的项目初始化：包括配置、模型和所有组件
-    pub(crate) fn init_components(&mut self, mode: InitMode) -> RunResult<()> {
+    pub(crate) fn init_components(&mut self, mode: PrjScope) -> RunResult<()> {
         // 1) 先进行基础项目初始化（包括目录创建、配置、连接器、wpgen配置等）
         self.init_basic(mode.clone())?;
 
@@ -95,7 +95,7 @@ impl WarpProject {
         Ok(())
     }
 
-    pub(crate) fn load_components(&mut self, mode: InitMode) -> RunResult<()> {
+    pub(crate) fn load_components(&mut self, mode: PrjScope) -> RunResult<()> {
         if mode.enable_conf() {
             let eng_conf = Self::load_engine_config_only(self.work_root_path())?;
             self.eng_conf = Some(eng_conf);
@@ -119,7 +119,7 @@ impl WarpProject {
     }
 
     /// 仅初始化基础项目结构（不包括模型）
-    pub fn init_basic(&mut self, mode: InitMode) -> RunResult<()> {
+    pub fn init_basic(&mut self, mode: PrjScope) -> RunResult<()> {
         // 1) 基础配置和数据目录初始化
         //let conf_manager = WarpConf::new(self.work_root());
         self.mk_framework_dir(mode.clone())?;
@@ -225,7 +225,7 @@ impl WarpProject {
         Ok(())
     }
 
-    fn mk_framework_dir(&self, mode: InitMode) -> RunResult<()> {
+    fn mk_framework_dir(&self, mode: PrjScope) -> RunResult<()> {
         let work_root = self.work_root_path();
         if mode.enable_conf() {
             ErrorHandler::safe_create_dir(&work_root.join(CONF_DIR))?;
@@ -293,13 +293,13 @@ mod tests {
     #[test]
     fn test_init_mode_from_str() {
         // 测试有效的模式字符串
-        assert_eq!(InitMode::from_str("full").unwrap(), InitMode::Full);
-        assert_eq!(InitMode::from_str("model").unwrap(), InitMode::Model);
-        assert_eq!(InitMode::from_str("conf").unwrap(), InitMode::Conf);
-        assert_eq!(InitMode::from_str("data").unwrap(), InitMode::Data);
+        assert_eq!(PrjScope::from_str("full").unwrap(), PrjScope::Full);
+        assert_eq!(PrjScope::from_str("model").unwrap(), PrjScope::Model);
+        assert_eq!(PrjScope::from_str("conf").unwrap(), PrjScope::Conf);
+        assert_eq!(PrjScope::from_str("data").unwrap(), PrjScope::Data);
 
         // 测试无效的模式字符串
-        let result = InitMode::from_str("invalid");
+        let result = PrjScope::from_str("invalid");
         assert!(result.is_err());
         if let Err(e) = result {
             assert!(e.to_string().contains("not init mode"));
@@ -308,55 +308,55 @@ mod tests {
 
     #[test]
     fn test_init_mode_enable_connector() {
-        assert!(InitMode::Full.enable_connector());
-        assert!(!InitMode::Model.enable_connector());
-        assert!(!InitMode::Conf.enable_connector());
-        assert!(!InitMode::Data.enable_connector());
+        assert!(PrjScope::Full.enable_connector());
+        assert!(!PrjScope::Model.enable_connector());
+        assert!(!PrjScope::Conf.enable_connector());
+        assert!(!PrjScope::Data.enable_connector());
     }
 
     #[test]
     fn test_init_mode_enable_model() {
         // Full 和 Normal 应该启用模型
-        assert!(InitMode::Full.enable_model());
-        assert!(InitMode::Model.enable_model());
+        assert!(PrjScope::Full.enable_model());
+        assert!(PrjScope::Model.enable_model());
 
         // Conf 和 Data 不应该启用模型
-        assert!(!InitMode::Conf.enable_model());
-        assert!(!InitMode::Data.enable_model());
+        assert!(!PrjScope::Conf.enable_model());
+        assert!(!PrjScope::Data.enable_model());
     }
 
     #[test]
     fn test_init_mode_enable_conf() {
         // 除了 Data，其他模式都应该启用配置
-        assert!(InitMode::Full.enable_conf());
-        assert!(InitMode::Normal.enable_conf());
-        assert!(InitMode::Conf.enable_conf());
-        assert!(!InitMode::Data.enable_conf());
+        assert!(PrjScope::Full.enable_conf());
+        assert!(PrjScope::Normal.enable_conf());
+        assert!(PrjScope::Conf.enable_conf());
+        assert!(!PrjScope::Data.enable_conf());
     }
 
     #[test]
     fn test_init_mode_debug_format() {
-        assert_eq!(format!("{:?}", InitMode::Full), "Full");
-        assert_eq!(format!("{:?}", InitMode::Model), "Model");
-        assert_eq!(format!("{:?}", InitMode::Conf), "Conf");
-        assert_eq!(format!("{:?}", InitMode::Data), "Data");
+        assert_eq!(format!("{:?}", PrjScope::Full), "Full");
+        assert_eq!(format!("{:?}", PrjScope::Model), "Model");
+        assert_eq!(format!("{:?}", PrjScope::Conf), "Conf");
+        assert_eq!(format!("{:?}", PrjScope::Data), "Data");
     }
 
     #[test]
     fn test_init_mode_equality() {
-        assert_eq!(InitMode::Full, InitMode::Full);
-        assert_eq!(InitMode::Model, InitMode::Model);
-        assert_ne!(InitMode::Full, InitMode::Model);
-        assert_ne!(InitMode::Conf, InitMode::Data);
+        assert_eq!(PrjScope::Full, PrjScope::Full);
+        assert_eq!(PrjScope::Model, PrjScope::Model);
+        assert_ne!(PrjScope::Full, PrjScope::Model);
+        assert_ne!(PrjScope::Conf, PrjScope::Data);
     }
 
     #[test]
     fn test_init_mode_clone() {
-        let mode = InitMode::Full;
+        let mode = PrjScope::Full;
         let cloned = mode.clone();
         assert_eq!(mode, cloned);
 
-        let mode = InitMode::Model;
+        let mode = PrjScope::Model;
         let cloned = mode.clone();
         assert_eq!(mode, cloned);
     }
@@ -370,7 +370,7 @@ mod tests {
         let work_root = temp_dir.path();
 
         // 创建项目并使用 Full 模式初始化
-        WarpProject::init(work_root, InitMode::Full)
+        WarpProject::init(work_root, PrjScope::Full)
             .expect("Full mode initialization should succeed");
 
         // 验证创建的目录和文件
@@ -469,7 +469,7 @@ mod tests {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
         let work_root = temp_dir.path();
 
-        WarpProject::init(work_root, InitMode::Normal)
+        WarpProject::init(work_root, PrjScope::Normal)
             .expect("Normal mode initialization should succeed");
 
         // 验证配置目录
@@ -548,7 +548,7 @@ mod tests {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
         let work_root = temp_dir.path();
 
-        WarpProject::init(work_root, InitMode::Conf)
+        WarpProject::init(work_root, PrjScope::Conf)
             .expect("Conf mode initialization should succeed");
 
         // 验证配置目录
@@ -584,7 +584,7 @@ mod tests {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
         let work_root = temp_dir.path();
 
-        WarpProject::init(work_root, InitMode::Data)
+        WarpProject::init(work_root, PrjScope::Data)
             .expect("Data mode initialization should succeed");
 
         // Data 模式只创建基础目录，不创建模型相关内容（修复后）
@@ -619,7 +619,7 @@ mod tests {
         let mut project = WarpProject::bare(work_root);
 
         // 测试 init_basic 方法（等效于 Normal 模式）
-        let result = project.init_basic(InitMode::Normal);
+        let result = project.init_basic(PrjScope::Normal);
         assert!(result.is_ok(), "Basic initialization should succeed");
 
         // 验证基础结构
@@ -661,7 +661,7 @@ mod tests {
 
         // 首先创建基础结构
         project
-            .init_basic(InitMode::Model)
+            .init_basic(PrjScope::Model)
             .expect("Basic initialization should succeed");
 
         // 测试 init_models 方法

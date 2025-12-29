@@ -77,14 +77,14 @@ mod tests {
     use wp_conf::test_support::TestCasePath;
 
     use super::*;
-    use crate::project::{WarpProject, init::InitMode};
+    use crate::project::{WarpProject, init::PrjScope};
 
     #[test]
     fn clean_outputs_remove_file_sink_outputs() {
         let case_path = TestCasePath::new("wgpen", "clean1").assert("test path");
         let mut project = WarpProject::bare(case_path.path());
         project
-            .init_basic(InitMode::Full)
+            .init_basic(PrjScope::Full)
             .assert("init project with connectors");
 
         let output_file = case_path.path().join("data/in_dat/gen.dat");

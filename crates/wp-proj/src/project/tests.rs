@@ -205,7 +205,7 @@ mod tests {
         project::{
             Connectors, ProjectPaths, Sinks, Sources, WarpProject,
             checker::{self, CheckComponent, CheckComponents, CheckOptions},
-            init::InitMode,
+            init::PrjScope,
         },
     };
 
@@ -779,16 +779,16 @@ mod tests {
     #[test]
     fn warp_project_static_init_and_load_conf() {
         let work = uniq_tmp_dir();
-        WarpProject::init(&work, InitMode::Conf).expect("init conf project");
+        WarpProject::init(&work, PrjScope::Conf).expect("init conf project");
         assert!(std::path::Path::new(&format!("{}/conf/wparse.toml", work)).exists());
-        assert!(WarpProject::load(&work, InitMode::Conf).is_ok());
+        assert!(WarpProject::load(&work, PrjScope::Conf).is_ok());
         cleanup_test_dir(&work);
     }
 
     #[test]
     fn warp_project_static_load_without_conf_fails() {
         let work = uniq_tmp_dir();
-        assert!(WarpProject::load(&work, InitMode::Conf).is_err());
+        assert!(WarpProject::load(&work, PrjScope::Conf).is_err());
         cleanup_test_dir(&work);
     }
 }
