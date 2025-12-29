@@ -1,9 +1,9 @@
 use derive_getters::Getters;
 
 use super::function::{
-    CharsDecode, FCharsHas, FCharsIn, FCharsNotHas, FDigitHas, FDigitIn, FIpAddrIn, FdHas,
+    FCharsHas, FCharsIn, FCharsNotHas, FDigitHas, FDigitIn, FIpAddrIn, FdHas, JsonUnescape,
 };
-use crate::ast::group::WplGroup;
+use crate::ast::{group::WplGroup, processor::Base64Decode};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum WplFun {
@@ -14,7 +14,8 @@ pub enum WplFun {
     FDigitIn(FDigitIn),
     FIpAddrIn(FIpAddrIn),
     FExists(FdHas),
-    CDecode(CharsDecode),
+    CUnescape(JsonUnescape),
+    CBase64Decode(Base64Decode),
 }
 
 #[derive(Debug, Clone, PartialEq, Getters)]

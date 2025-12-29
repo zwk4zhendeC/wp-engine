@@ -44,6 +44,7 @@ impl WplEngine {
                 }
                 ProcessResult::Miss(fail_info) => {
                     // 完全失败，记录深度最高的错误信息
+                    warn_data!("wpls miss data: {}\n data:{}", fail_info, data.payload);
                     miss_packets.push((data, fail_info));
                 }
             }

@@ -5,7 +5,10 @@ use winnow::{
     ascii::{digit1, multispace0},
     combinator::alt,
 };
-use wp_parser::WResult;
+use wp_parser::{
+    WResult,
+    fun::{fun_trait::Fun0Builder, parser::call_fun_args0},
+};
 use wp_parser::{
     atom::take_path,
     fun::{
@@ -33,7 +36,8 @@ pub fn wpl_fun(input: &mut &str) -> WResult<WplFun> {
         call_fun_args2::<FDigitIn>.map(WplFun::FDigitIn),
         call_fun_args2::<FIpAddrIn>.map(WplFun::FIpAddrIn),
         call_fun_args1::<FdHas>.map(WplFun::FExists),
-        call_fun_args1::<CharsDecode>.map(WplFun::CDecode),
+        call_fun_args0::<JsonUnescape>.map(WplFun::CUnescape),
+        call_fun_args0::<Base64Decode>.map(WplFun::CBase64Decode),
     ))
     .parse_next(input)?;
     Ok(fun)
@@ -213,24 +217,26 @@ impl Fun2Builder for FIpAddrIn {
 }
 
 // ---------------- String Mode ----------------
-use crate::ast::processor::CharsDecode;
+use crate::ast::processor::JsonUnescape;
 
-impl Fun1Builder for CharsDecode {
-    type ARG1 = String;
-
-    fn args1(data: &mut &str) -> WResult<Self::ARG1> {
-        use winnow::token::take_till;
-        multispace0.parse_next(data)?;
-        let val = take_till(1.., |c: char| c == ')' || c == ',').parse_next(data)?;
-        Ok(val.trim().to_string())
-    }
-
+impl Fun0Builder for JsonUnescape {
     fn fun_name() -> &'static str {
-        "chars_unescape"
+        "json_unescape"
     }
 
-    fn build(args: Self::ARG1) -> Self {
-        CharsDecode { mode: args }
+    fn build() -> Self {
+        JsonUnescape {}
+    }
+}
+
+use crate::ast::processor::Base64Decode;
+impl Fun0Builder for Base64Decode {
+    fn fun_name() -> &'static str {
+        "base64_decode"
+    }
+
+    fn build() -> Self {
+        Base64Decode {}
     }
 }
 
@@ -240,7 +246,7 @@ mod tests {
 
     use orion_error::TestAssert;
 
-    use crate::ast::processor::FdHas;
+    use crate::ast::processor::{FdHas, JsonUnescape};
 
     use super::*;
 
@@ -291,5 +297,14 @@ mod tests {
                 ]
             })
         );
+
+        let fun = wpl_fun.parse("json_unescape()").assert();
+        assert_eq!(fun, WplFun::CUnescape(JsonUnescape {}));
+
+        assert!(wpl_fun.parse("json_unescape(decoded)").is_err());
+
+        let fun = wpl_fun.parse("base64_decode()").assert();
+        assert_eq!(fun, WplFun::CBase64Decode(Base64Decode {}));
+        assert!(wpl_fun.parse("base64_decode(decoded)").is_err());
     }
 }

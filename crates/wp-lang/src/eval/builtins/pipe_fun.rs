@@ -1,8 +1,10 @@
 use crate::ast::WplFun;
 use crate::ast::processor::{
-    FCharsHas, FCharsIn, FCharsNotHas, FDigitHas, FDigitIn, FIpAddrIn, FdHas, StubFun,
+    Base64Decode, FCharsHas, FCharsIn, FCharsNotHas, FDigitHas, FDigitIn, FIpAddrIn, FdHas, StubFun,
 };
 use crate::eval::runtime::field_pipe::{FieldIndex, FiledSetProcessor};
+use base64::Engine;
+use base64::engine::general_purpose;
 use winnow::combinator::fail;
 use wp_model_core::model::{DataField, Value};
 use wp_parser::Parser;
@@ -230,20 +232,14 @@ impl FiledSetProcessor for WplFun {
             WplFun::FDigitIn(f) => f.process(value, index),
             WplFun::FIpAddrIn(f) => f.process(value, index),
             WplFun::FExists(f) => f.process(value, index),
-            WplFun::CDecode(f) => f.process(value, index),
+            WplFun::CUnescape(f) => f.process(value, index),
+            WplFun::CBase64Decode(f) => f.process(value, index),
         }
     }
 }
 
 // ---------------- String Mode ----------------
-use crate::ast::processor::CharsDecode;
-
-impl CharsDecode {
-    #[inline]
-    fn is_json_unescape(&self) -> bool {
-        matches!(self.mode.as_str(), "json" | "decoded" | "decode" | "dec")
-    }
-}
+use crate::ast::processor::JsonUnescape;
 
 #[inline]
 fn decode_json_escapes(raw: &str) -> Option<String> {
@@ -253,41 +249,116 @@ fn decode_json_escapes(raw: &str) -> Option<String> {
 }
 
 #[inline]
-fn transform_value_to_decoded(v: &mut Value) {
+fn value_json_unescape(v: &mut Value) -> bool {
     match v {
         Value::Chars(s) => {
             // fast path: 没有反斜杠则无需反转义
             if !s.as_bytes().contains(&b'\\') {
-                return;
+                return true;
             }
             if let Some(decoded) = decode_json_escapes(s) {
                 *s = decoded;
-            }
-        }
-        Value::Array(arr) => {
-            for f in arr.iter_mut() {
-                transform_value_to_decoded(f.get_value_mut());
-            }
-        }
-        Value::Obj(obj) => {
-            for (_k, f) in obj.iter_mut() {
-                transform_value_to_decoded(f.get_value_mut());
+                return true;
             }
         }
         _ => {}
     }
+    return false;
 }
 
-impl FiledSetProcessor for CharsDecode {
+impl FiledSetProcessor for JsonUnescape {
     #[inline]
     fn process(&self, value: &mut Vec<DataField>, _index: Option<&FieldIndex>) -> WResult<()> {
-        if !self.is_json_unescape() {
-            return Ok(());
-        }
         for f in value.iter_mut() {
             let v = f.get_value_mut();
-            transform_value_to_decoded(v);
+            if !value_json_unescape(v) {
+                return fail.context(ctx_desc("json_unescape")).parse_next(&mut "");
+            }
         }
         Ok(())
+    }
+}
+
+impl FiledSetProcessor for Base64Decode {
+    #[inline]
+    fn process(&self, value: &mut Vec<DataField>, _index: Option<&FieldIndex>) -> WResult<()> {
+        for f in value.iter_mut() {
+            let v = f.get_value_mut();
+            if !value_base64_decode(v) {
+                return fail.context(ctx_desc("base64_decode")).parse_next(&mut "");
+            }
+        }
+        Ok(())
+    }
+}
+
+#[inline]
+fn value_base64_decode(v: &mut Value) -> bool {
+    match v {
+        Value::Chars(s) => {
+            if let Ok(decoded) = general_purpose::STANDARD.decode(s.as_bytes()) {
+                if let Ok(vstring) = String::from_utf8(decoded) {
+                    *s = vstring;
+                    return true;
+                }
+            }
+            return false;
+        }
+        _ => {
+            return false;
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn base64_decode_successfully_rewrites_chars_field() {
+        let encoded = general_purpose::STANDARD.encode("hello world");
+        let mut fields = vec![DataField::from_chars("payload".to_string(), encoded)];
+        Base64Decode {}
+            .process(&mut fields, None)
+            .expect("decode ok");
+        if let Value::Chars(s) = fields[0].get_value() {
+            assert_eq!(s, "hello world");
+        } else {
+            panic!("payload should remain chars");
+        }
+    }
+
+    #[test]
+    fn base64_decode_returns_err_on_invalid_payload() {
+        let mut fields = vec![DataField::from_chars(
+            "payload".to_string(),
+            "***".to_string(),
+        )];
+        assert!(Base64Decode {}.process(&mut fields, None).is_err());
+    }
+
+    #[test]
+    fn json_unescape_successfully_decodes_chars_field() {
+        let mut fields = vec![DataField::from_chars(
+            "txt".to_string(),
+            r"line1\nline2".to_string(),
+        )];
+        JsonUnescape {}
+            .process(&mut fields, None)
+            .expect("decode ok");
+        if let Value::Chars(s) = fields[0].get_value() {
+            assert!(s.contains('\n'));
+        } else {
+            panic!("txt should stay chars");
+        }
+    }
+
+    #[test]
+    fn json_unescape_returns_err_on_invalid_escape() {
+        let mut fields = vec![DataField::from_chars(
+            "txt".to_string(),
+            r"line1\qline2".to_string(),
+        )];
+        assert!(JsonUnescape {}.process(&mut fields, None).is_err());
     }
 }

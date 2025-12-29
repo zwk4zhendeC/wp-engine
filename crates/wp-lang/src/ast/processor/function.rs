@@ -51,6 +51,7 @@ impl FdHas {
 pub struct StubFun {}
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct CharsDecode {
-    pub(crate) mode: String,
-}
+pub struct JsonUnescape {}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Base64Decode {}

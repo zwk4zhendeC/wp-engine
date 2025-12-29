@@ -1,6 +1,6 @@
 use std::net::IpAddr;
 
-use crate::fun::fun_trait::{Fun1Builder, Fun2Builder};
+use crate::fun::fun_trait::{Fun0Builder, Fun1Builder, Fun2Builder};
 use crate::net::ip;
 use crate::symbol::{symbol_bracket_beg, symbol_bracket_end, symbol_comma};
 use winnow::ascii::{digit1, multispace0};
@@ -19,6 +19,14 @@ pub fn take_call_args2<T: Fun2Builder>(data: &mut &str) -> WResult<(T::ARG1, T::
     multispace0.parse_next(data)?;
     symbol_bracket_end.parse_next(data)?;
     Ok((a1, a2))
+}
+
+pub fn take_call_args0<T: Fun0Builder>(data: &mut &str) -> WResult<()> {
+    multispace0.parse_next(data)?;
+    symbol_bracket_beg.parse_next(data)?;
+    multispace0.parse_next(data)?;
+    symbol_bracket_end.parse_next(data)?;
+    Ok(())
 }
 
 pub fn take_call_args1<T: Fun1Builder>(data: &mut &str) -> WResult<T::ARG1> {
@@ -42,6 +50,13 @@ pub fn call_fun_args1<T: Fun1Builder>(data: &mut &str) -> WResult<T> {
     T::fun_name().parse_next(data)?;
     let args = take_call_args1::<T>.parse_next(data)?;
     let obj = T::build(args);
+    Ok(obj)
+}
+
+pub fn call_fun_args0<T: Fun0Builder>(data: &mut &str) -> WResult<T> {
+    T::fun_name().parse_next(data)?;
+    let _ = take_call_args0::<T>.parse_next(data)?;
+    let obj = T::build();
     Ok(obj)
 }
 

@@ -60,6 +60,12 @@ impl MultiParser {
                     }
                 }
                 Err(e) => {
+                    info_data!(
+                        "wpl parse fail: {}\n data:{}\n{}",
+                        wpl_line.wpl_key(),
+                        event.payload,
+                        e
+                    );
                     // 记录解析深度最高的错误
                     if let WparseReason::Uvs(UvsReason::DataError(_, Some(pos))) = e.reason() {
                         if *pos > max_depth {

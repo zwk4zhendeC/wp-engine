@@ -409,7 +409,7 @@ mod tests {
     fn test_json_str_mode_decoded_pipe() -> AnyResult<()> {
         let mut data = r#"{"path":"c:\\users\\fc\\file","txt":"line1\nline2"}"#;
         let conf = wpl_rule
-            .parse("rule test {(json(chars@path,chars@txt) | chars_unescape(json))}")
+            .parse("rule test {(json(chars@path,chars@txt) | json_unescape())}")
             .assert();
         let f_conf = conf.statement.first_field().no_less("first field")?;
         let fpu = FieldEvalUnit::from_auto(f_conf.clone());

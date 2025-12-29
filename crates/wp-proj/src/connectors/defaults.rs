@@ -17,21 +17,25 @@ pub fn registered_templates() -> Vec<ConnectorTemplate> {
 }
 
 fn templates_from_defs(mut defs: Vec<ConnectorDef>) -> Vec<ConnectorTemplate> {
+    fn slugify(raw: &str) -> String {
+        raw.chars()
+            .map(|c| {
+                if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                    c.to_ascii_lowercase()
+                } else {
+                    '_'
+                }
+            })
+            .collect()
+    }
+
     defs.sort_by(|a, b| a.id.cmp(&b.id));
     defs.into_iter()
         .enumerate()
-        .map(|(idx, def)| {
-            let kind_slug = def
-                .kind
-                .chars()
-                .map(|c| if c.is_ascii_alphanumeric() { c } else { '_' })
-                .collect::<String>()
-                .to_ascii_lowercase();
-            ConnectorTemplate {
-                scope: def.scope,
-                file_name: format!("{:02}-{}-{}.toml", idx, kind_slug, def.id),
-                connectors: vec![def],
-            }
+        .map(|(idx, def)| ConnectorTemplate {
+            scope: def.scope,
+            file_name: format!("{:02}-{}.toml", idx, slugify(&def.id)),
+            connectors: vec![def],
         })
         .collect()
 }

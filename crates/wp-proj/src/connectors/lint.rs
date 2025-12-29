@@ -4,14 +4,21 @@ use wp_conf::sources::io::resolve_connectors_base_dir;
 
 use super::types::{LintRow, LintSeverity, Side, SilentErrKind};
 fn kind_hint_from_filename_path(p: &Path) -> Option<String> {
-    p.file_stem().and_then(|s| s.to_str()).and_then(|name| {
-        let parts: Vec<&str> = name.split('-').collect();
-        if parts.len() >= 2 {
-            Some(parts[1].to_string())
-        } else {
-            None
+    let stem = p.file_stem()?.to_str()?;
+    let parts: Vec<&str> = stem.split('-').collect();
+    if parts.len() >= 3 {
+        return Some(parts[1].to_string());
+    }
+    if parts.len() >= 2 {
+        let raw = parts[1];
+        let mut iter = raw.split('_');
+        if let Some(first) = iter.next() {
+            if !first.is_empty() {
+                return Some(first.to_string());
+            }
         }
-    })
+    }
+    None
 }
 fn hint_kind_compatible(hint: &str, kind: &str) -> bool {
     if hint.eq_ignore_ascii_case(kind) {
@@ -163,7 +170,7 @@ mod tests {
 
     #[test]
     fn filename_hint_extracts_kind_segment() {
-        let path = Path::new("source.d/00-file-file_src.toml");
+        let path = Path::new("source.d/00-file_src.toml");
         assert_eq!(kind_hint_from_filename_path(path), Some("file".into()));
     }
 
