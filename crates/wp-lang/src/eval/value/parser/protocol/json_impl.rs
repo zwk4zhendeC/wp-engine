@@ -34,6 +34,15 @@ impl JsonProc {
         path
     }
 
+    #[inline]
+    fn string_preserve_escapes(v: &Value) -> String {
+        let raw = v.to_string();
+        let trimmed = raw.trim();
+        let without_prefix = trimmed.strip_prefix('"').unwrap_or(trimmed);
+        let without_suffix = without_prefix.strip_suffix('"').unwrap_or(without_prefix);
+        without_suffix.to_string()
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn proc_json_map(
         fpu: &FieldEvalUnit,
@@ -229,6 +238,7 @@ impl JsonProc {
                 }
             }
             Value::String(_) => {
+                let raw = Self::string_preserve_escapes(v);
                 if exact {
                     Self::exact_check(fpu, true, sub_conf_opt.is_some(), j_path.as_str())?;
                 }
@@ -241,19 +251,11 @@ impl JsonProc {
                         ups_sep.set_current("\\0".into())
                     }
 
-                    fpu.parse(
-                        &ups_sep,
-                        &mut v.to_string().trim_matches('"').trim(),
-                        Some(run_key),
-                        out,
-                    )?;
+                    let mut raw_ref = raw.as_str();
+                    fpu.parse(&ups_sep, &mut raw_ref, Some(run_key), out)?;
                     return Ok(());
                 }
-                let v_str = v.to_string();
-                out.push(DataField::from_chars(
-                    run_key,
-                    v_str.trim_matches('"').trim().to_string(),
-                ));
+                out.push(DataField::from_chars(run_key, raw));
                 return Ok(());
             }
             Value::Array(arr) => {

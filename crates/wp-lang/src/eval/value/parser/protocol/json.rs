@@ -373,6 +373,23 @@ mod tests {
     }
 
     #[test]
+    fn test_json_logs_unescape_rule() -> AnyResult<()> {
+        let rule = r#"rule nginx { (json(chars@logs) | json_unescape( )) }"#;
+        let data = r#"{"name": "warpparse", "logs": "[10]:\"sys\""}"#;
+        let pipe = WplEvaluator::from_code(rule)?;
+        let (tdc, _) = pipe.proc(data, 0)?;
+        if let Some(field) = tdc.field("logs") {
+            assert_eq!(
+                field,
+                &DataField::from_chars("logs".to_string(), "[10]:\"sys\"".to_string())
+            );
+        } else {
+            panic!("logs field missing");
+        }
+        Ok(())
+    }
+
+    #[test]
     fn test_json_big_integer_downgrade_to_string() -> AnyResult<()> {
         // 大于 i64::MAX 的无符号整数应降级为字符串，避免静默丢失
         let conf = WplField::try_parse("json").assert();
