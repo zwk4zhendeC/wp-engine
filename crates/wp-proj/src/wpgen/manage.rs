@@ -82,7 +82,7 @@ mod tests {
     #[test]
     fn clean_outputs_remove_file_sink_outputs() {
         let case_path = TestCasePath::new("wgpen", "clean1").assert("test path");
-        let mut project = WarpProject::new(case_path.path());
+        let mut project = WarpProject::bare(case_path.path());
         project
             .init_basic(InitMode::Full)
             .assert("init project with connectors");

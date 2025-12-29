@@ -32,13 +32,27 @@ pub const DEFAULT_SYSLOG_PORT: i64 = 1514;
 /// The `Sources` struct provides a centralized interface for managing all
 /// source-related operations including validation, initialization, and routing
 /// of data sources within the project.
-#[derive(Clone)]
-pub struct Sources;
+#[derive(Clone, Default)]
+pub struct Sources {
+    root_override: Option<PathBuf>,
+}
 
 impl Sources {
     /// Creates a new Sources instance
     pub fn new() -> Self {
-        Self
+        Self { root_override: None }
+    }
+
+    pub(crate) fn set_root<P: AsRef<Path>>(&mut self, root: P) {
+        self.root_override = Some(root.as_ref().to_path_buf());
+    }
+
+    fn resolve_root<P: AsRef<Path>>(&self, work_root: P) -> RunResult<PathBuf> {
+        if let Some(root) = &self.root_override {
+            Ok(root.clone())
+        } else {
+            SpecConfPath::topology(work_root.as_ref().to_path_buf(), "sources")
+        }
     }
 
     // =================== CORE OPERATIONS ===================
@@ -115,7 +129,7 @@ impl Sources {
     /// Ok(()) if initialization succeeds, Err(RunError) otherwise
     pub fn init<P: AsRef<Path>>(&self, work_root: P) -> RunResult<()> {
         let work_root = work_root.as_ref();
-        let wpsrc_dir = SpecConfPath::topology(PathBuf::from(work_root), "sources")?;
+        let wpsrc_dir = self.resolve_root(work_root)?;
         let wpsrc_path = wpsrc_dir.join(WPSRC_TOML);
 
         // Ensure parent directory exists

@@ -7,6 +7,7 @@ use orion_error::{ToStructError, UvsValidationFrom};
 use wp_conf::connectors::{
     ConnectorScope, ParamMap, load_connector_defs_from_dir, param_map_to_table,
 };
+use wp_conf::engine::EngineConfig;
 use wp_conf::sources::{SourceConnector, WpSourcesConfig, find_connectors_dir};
 
 /// A flattened row for listing source connectors and their usages.
@@ -30,21 +31,9 @@ pub struct RouteRow {
 }
 
 /// Locate `wpsrc.toml` starting from a work root (supports `topology/sources/` and legacy `source/`).
-fn resolve_wpsrc_path(work_root: &str) -> OrionConfResult<PathBuf> {
+fn resolve_wpsrc_path(work_root: &str, eng_conf: &EngineConfig) -> OrionConfResult<PathBuf> {
     let wr = PathBuf::from(work_root);
-    let candidate1 = wr.join("topology").join("sources").join("wpsrc.toml");
-    if candidate1.exists() {
-        return Ok(candidate1);
-    }
-    let candidate2 = wr.join("source").join("wpsrc.toml");
-    if candidate2.exists() {
-        return Ok(candidate2);
-    }
-    ConfIOReason::from_validation(format!(
-        "missing wpsrc.toml under '{}/topology/sources' or '{}/source'",
-        work_root, work_root
-    ))
-    .err_result()
+    Ok(wr.join(eng_conf.src_root()).join("wpsrc.toml"))
 }
 
 /// Load connectors map from `connectors/source.d` (dedup and validate ids).
@@ -81,8 +70,11 @@ fn detail_of(_kind: &str, params: &ParamMap) -> String {
 }
 
 /// List source connectors and reference count from wpsrc.toml
-pub fn list_connectors(work_root: &str) -> OrionConfResult<Vec<ConnectorListRow>> {
-    let wpsrc_path = resolve_wpsrc_path(work_root)?;
+pub fn list_connectors(
+    work_root: &str,
+    eng_conf: &EngineConfig,
+) -> OrionConfResult<Vec<ConnectorListRow>> {
+    let wpsrc_path = resolve_wpsrc_path(work_root, eng_conf)?;
     let conn_base = find_connectors_dir(&wpsrc_path).ok_or_else(|| {
         ConfIOReason::from_validation(format!(
             "connectors/source.d not found (start from: {})",
@@ -113,8 +105,12 @@ pub fn list_connectors(work_root: &str) -> OrionConfResult<Vec<ConnectorListRow>
 }
 
 /// Build a resolved view of `[[sources]]`, applying connector param whitelists and simple filtering.
-pub fn route_table(work_root: &str, path_like: Option<&str>) -> OrionConfResult<Vec<RouteRow>> {
-    let wpsrc_path = resolve_wpsrc_path(work_root)?;
+pub fn route_table(
+    work_root: &str,
+    eng_conf: &EngineConfig,
+    path_like: Option<&str>,
+) -> OrionConfResult<Vec<RouteRow>> {
+    let wpsrc_path = resolve_wpsrc_path(work_root, eng_conf)?;
     let conn_base = find_connectors_dir(&wpsrc_path).ok_or_else(|| {
         ConfIOReason::from_validation(format!(
             "connectors/source.d not found (start from: {})",

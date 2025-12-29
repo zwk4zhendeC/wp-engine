@@ -380,7 +380,9 @@ pub fn check_with_default(project: &WarpProject, opts: &CheckOptions) -> RunResu
 }
 
 fn collect_connector_counts(work_root: &str) -> Result<ConnectorCounts, String> {
-    let src_rows = source_connectors::list_connectors(work_root).map_err(|e| e.to_string())?;
+    let (_cm, main) = cfg_face::load_warp_engine_confs(work_root).map_err(|e| e.to_string())?;
+    let src_rows =
+        source_connectors::list_connectors(work_root, &main).map_err(|e| e.to_string())?;
     let src_defs = src_rows.len();
     let src_refs: usize = src_rows.iter().map(|row| row.refs).sum();
 

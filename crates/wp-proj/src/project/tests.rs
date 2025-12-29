@@ -205,6 +205,7 @@ mod tests {
         project::{
             Connectors, ProjectPaths, Sinks, Sources, WarpProject,
             checker::{self, CheckComponent, CheckComponents, CheckOptions},
+            init::InitMode,
         },
     };
 
@@ -216,7 +217,7 @@ mod tests {
         let work = uniq_tmp_dir();
 
         // 在空目录中创建项目（没有任何配置文件）
-        let project = WarpProject::new(&work);
+        let project = WarpProject::bare(&work);
 
         // load_main should succeed even with no config (creates defaults)
         assert!(wp_engine::facade::config::load_warp_engine_confs(&work).is_err());
@@ -245,7 +246,7 @@ mod tests {
         create_minimal_project_structure(&work);
         create_basic_wparse_config(&work);
 
-        let project = WarpProject::new(&work);
+        let project = WarpProject::bare(&work);
 
         // 调试：检查是否有意外的文件
         let sources_path = format!("{}/topology/sources/wpsrc.toml", work);
@@ -326,7 +327,7 @@ mod tests {
         create_basic_file_connector(&work);
         create_basic_wpsrc_config(&work);
 
-        let project = WarpProject::new(&work);
+        let project = WarpProject::bare(&work);
 
         // 配置和 sources 现在都应该通过
         assert!(
@@ -384,7 +385,7 @@ mod tests {
         create_basic_wpsrc_config(&work);
         create_basic_wpl_file(&work);
 
-        let project = WarpProject::new(&work);
+        let project = WarpProject::bare(&work);
 
         // 调试各个检查
         println!(
@@ -475,7 +476,7 @@ mod tests {
         create_basic_wpl_file(&work);
         create_basic_oml_file(&work);
 
-        let project = WarpProject::new(&work);
+        let project = WarpProject::bare(&work);
 
         // 所有检查都应该通过
         println!("DEBUG: Testing complete project checks");
@@ -597,7 +598,7 @@ mod tests {
             std::fs::read_to_string(&config_path).unwrap_or_default()
         );
 
-        let _project = WarpProject::new(&work);
+        let _project = WarpProject::bare(&work);
 
         let load_result = wp_engine::facade::config::load_warp_engine_confs(&work);
         println!("Invalid config load result is_ok: {}", load_result.is_ok());
@@ -618,7 +619,7 @@ mod tests {
         fs::create_dir_all(std::path::Path::new(&wpsrc_path).parent().unwrap()).unwrap();
         fs::write(wpsrc_path, "invalid toml").unwrap();
 
-        let project = WarpProject::new(&work);
+        let project = WarpProject::bare(&work);
 
         // check_sources 现在应该失败，因为文件内容无效
         assert!(project.sources_c().check_sources_config(&work).is_err()); // 修复后：无效TOML应该失败
@@ -641,7 +642,7 @@ mod tests {
         create_minimal_project_structure(&work);
         create_basic_wparse_config(&work);
 
-        let project = WarpProject::new(&work);
+        let project = WarpProject::bare(&work);
         let args = CheckOptions {
             work_root: work.clone(),
             what: "all".to_string(),
@@ -668,7 +669,7 @@ mod tests {
         create_minimal_project_structure(&work);
         create_basic_wparse_config(&work);
 
-        let project = WarpProject::new(&work);
+        let project = WarpProject::bare(&work);
         let opts = CheckOptions::new(&work);
         let comps = CheckComponents::default().with_only([CheckComponent::Engine]);
 
@@ -772,6 +773,22 @@ mod tests {
         let invalid_result = check_to_result(oml.check(&work));
         println!("Invalid OML file check: {:?}", invalid_result);
 
+        cleanup_test_dir(&work);
+    }
+
+    #[test]
+    fn warp_project_static_init_and_load_conf() {
+        let work = uniq_tmp_dir();
+        WarpProject::init(&work, InitMode::Conf).expect("init conf project");
+        assert!(std::path::Path::new(&format!("{}/conf/wparse.toml", work)).exists());
+        assert!(WarpProject::load(&work, InitMode::Conf).is_ok());
+        cleanup_test_dir(&work);
+    }
+
+    #[test]
+    fn warp_project_static_load_without_conf_fails() {
+        let work = uniq_tmp_dir();
+        assert!(WarpProject::load(&work, InitMode::Conf).is_err());
         cleanup_test_dir(&work);
     }
 }

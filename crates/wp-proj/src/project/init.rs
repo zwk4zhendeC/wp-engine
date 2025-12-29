@@ -1,10 +1,11 @@
 use super::warp::WarpProject;
 use super::{Oml, Wpl};
 use crate::utils::error_handler::ErrorHandler;
-use orion_conf::ToStructError;
-use orion_error::UvsValidationFrom;
+use orion_conf::{ErrorOwe, ToStructError, TomlIO};
+use orion_error::{UvsConfFrom, UvsValidationFrom};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use wp_conf::{engine::EngineConfig, generator::wpgen::WpGenConfig};
 use wp_conf::paths::{OUT_FILE_PATH, RESCURE_FILE_PATH, SRC_FILE_PATH};
 use wp_engine::facade::config::WPARSE_LOG_PATH;
 use wp_error::{RunError, RunReason};
@@ -75,7 +76,7 @@ impl WarpProject {
     }
 
     /// 完整的项目初始化：包括配置、模型和所有组件
-    pub fn init(&mut self, mode: InitMode) -> RunResult<()> {
+    pub(crate) fn init_components(&mut self, mode: InitMode) -> RunResult<()> {
         // 1) 先进行基础项目初始化（包括目录创建、配置、连接器、wpgen配置等）
         self.init_basic(mode.clone())?;
 
@@ -94,6 +95,29 @@ impl WarpProject {
         Ok(())
     }
 
+    pub(crate) fn load_components(&mut self, mode: InitMode) -> RunResult<()> {
+        if mode.enable_conf() {
+            let eng_conf = Self::load_engine_config_only(self.work_root_path())?;
+            self.eng_conf = Some(eng_conf);
+            self.apply_engine_paths();
+            Self::load_wpgen_config_only(self.work_root_path())?;
+        }
+        if mode.enable_connector() {
+            self.connectors()
+                .check(self.work_root())
+                .map_err(|e| RunReason::from_conf(e).to_err())?;
+        }
+        if mode.enable_topology() {
+            self.sinks_c().check(self.work_root())?;
+            self.sources_c().check(self.work_root())?;
+        }
+        if mode.enable_model() {
+            self.wpl().check(self.work_root())?;
+            let _ = self.oml().check(self.work_root())?;
+        }
+        Ok(())
+    }
+
     /// 仅初始化基础项目结构（不包括模型）
     pub fn init_basic(&mut self, mode: InitMode) -> RunResult<()> {
         // 1) 基础配置和数据目录初始化
@@ -102,7 +126,9 @@ impl WarpProject {
 
         if mode.enable_conf() {
             // wparse/wpgen 主配置初始化（如不存在则复制示例文件）
-            Self::init_engine_config(self.work_root_path())?;
+            let eng_conf = Self::init_engine_config(self.work_root_path())?;
+            self.eng_conf = Some(eng_conf);
+            self.apply_engine_paths();
             Self::init_wpgen_config(self.work_root_path())?;
         }
 
@@ -153,7 +179,7 @@ impl WarpProject {
     }
 
     /// 初始化 wparse 主配置（wparse.toml）
-    fn init_engine_config<P: AsRef<Path>>(work_root: P) -> RunResult<()> {
+    fn init_engine_config<P: AsRef<Path>>(work_root: P) -> RunResult<EngineConfig> {
         use std::fs;
 
         let work_root = work_root.as_ref();
@@ -169,7 +195,33 @@ impl WarpProject {
                 eprintln!("Warning: Failed to write wparse.toml");
             }
         }
+        EngineConfig::load_toml(&engine_config_path).owe_conf()
+    }
 
+    fn load_engine_config_only<P: AsRef<Path>>(work_root: P) -> RunResult<EngineConfig> {
+        let work_root = work_root.as_ref();
+        let engine_config_path = work_root.join(CONF_WPARSE_FILE);
+        if !engine_config_path.exists() {
+            return RunReason::from_conf(format!(
+                "wparse config missing: {}",
+                engine_config_path.display()
+            ))
+            .err_result();
+        }
+        EngineConfig::load_toml(&engine_config_path).owe_conf()
+    }
+
+    fn load_wpgen_config_only<P: AsRef<Path>>(work_root: P) -> RunResult<()> {
+        let work_root = work_root.as_ref();
+        let wpgen_config_path = work_root.join(CONF_WPGEN_FILE);
+        if !wpgen_config_path.exists() {
+            return RunReason::from_conf(format!(
+                "wpgen config missing: {}",
+                wpgen_config_path.display()
+            ))
+            .err_result();
+        }
+        WpGenConfig::load_toml(&wpgen_config_path).owe_conf()?;
         Ok(())
     }
 
@@ -195,7 +247,7 @@ impl WarpProject {
         Ok(())
     }
 
-    fn resolve_with_root(base: &Path, raw: &str) -> PathBuf {
+    pub(crate) fn resolve_with_root(base: &Path, raw: &str) -> PathBuf {
         let trimmed = raw.strip_prefix("./").unwrap_or(raw);
         let candidate = Path::new(trimmed);
         if candidate.is_relative() {
@@ -318,11 +370,8 @@ mod tests {
         let work_root = temp_dir.path();
 
         // 创建项目并使用 Full 模式初始化
-        let mut project = WarpProject::new(work_root);
-
-        // Full 模式应该初始化所有组件
-        let result = project.init(InitMode::Full);
-        assert!(result.is_ok(), "Full mode initialization should succeed");
+        WarpProject::init(work_root, InitMode::Full)
+            .expect("Full mode initialization should succeed");
 
         // 验证创建的目录和文件
         assert!(
@@ -420,11 +469,8 @@ mod tests {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
         let work_root = temp_dir.path();
 
-        let mut project = WarpProject::new(work_root);
-
-        // Normal 模式应该初始化配置和模型，但不包括连接器
-        let result = project.init(InitMode::Normal);
-        assert!(result.is_ok(), "Normal mode initialization should succeed");
+        WarpProject::init(work_root, InitMode::Normal)
+            .expect("Normal mode initialization should succeed");
 
         // 验证配置目录
         assert!(
@@ -502,11 +548,8 @@ mod tests {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
         let work_root = temp_dir.path();
 
-        let mut project = WarpProject::new(work_root);
-
-        // Conf 模式应该只初始化配置
-        let result = project.init(InitMode::Conf);
-        assert!(result.is_ok(), "Conf mode initialization should succeed");
+        WarpProject::init(work_root, InitMode::Conf)
+            .expect("Conf mode initialization should succeed");
 
         // 验证配置目录
         assert!(
@@ -541,11 +584,8 @@ mod tests {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
         let work_root = temp_dir.path();
 
-        let mut project = WarpProject::new(work_root);
-
-        // Data 模式应该只初始化数据目录结构，不包括配置
-        let result = project.init(InitMode::Data);
-        assert!(result.is_ok(), "Data mode initialization should succeed");
+        WarpProject::init(work_root, InitMode::Data)
+            .expect("Data mode initialization should succeed");
 
         // Data 模式只创建基础目录，不创建模型相关内容（修复后）
         // Data 模式不应该创建配置或连接器
@@ -576,7 +616,7 @@ mod tests {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
         let work_root = temp_dir.path();
 
-        let mut project = WarpProject::new(work_root);
+        let mut project = WarpProject::bare(work_root);
 
         // 测试 init_basic 方法（等效于 Normal 模式）
         let result = project.init_basic(InitMode::Normal);
@@ -617,7 +657,7 @@ mod tests {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
         let work_root = temp_dir.path();
 
-        let mut project = WarpProject::new(work_root);
+        let mut project = WarpProject::bare(work_root);
 
         // 首先创建基础结构
         project

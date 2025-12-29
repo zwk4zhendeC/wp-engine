@@ -5,12 +5,26 @@ use wp_error::run_error::RunResult;
 
 use crate::utils::config_path::{ConfigPathResolver, SpecConfPath};
 
-#[derive(Clone)]
-pub struct Sinks;
+#[derive(Clone, Default)]
+pub struct Sinks {
+    root_override: Option<PathBuf>,
+}
 
 impl Sinks {
     pub fn new() -> Self {
-        Sinks
+        Self { root_override: None }
+    }
+
+    pub(crate) fn set_root<P: AsRef<Path>>(&mut self, root: P) {
+        self.root_override = Some(root.as_ref().to_path_buf());
+    }
+
+    fn resolve_root<P: AsRef<Path>>(&self, work_root: P) -> RunResult<PathBuf> {
+        if let Some(root) = &self.root_override {
+            Ok(root.clone())
+        } else {
+            SpecConfPath::topology(work_root.as_ref().to_path_buf(), "sinks")
+        }
     }
 
     // 校验路由（严格）
@@ -38,7 +52,7 @@ impl Sinks {
     // 初始化 sinks 骨架（写入配置指定的sink目录，如果配置不存在则使用默认路径）
     pub fn init<P: AsRef<Path>>(&self, work_root: P) -> RunResult<()> {
         // 使用统一的路径解析器
-        let sink_root = SpecConfPath::topology(PathBuf::from(work_root.as_ref()), "sinks")?;
+        let sink_root = self.resolve_root(work_root.as_ref())?;
 
         Self::ensure_defaults_file(&sink_root)?;
         Self::ensure_business_demo(&sink_root)?;

@@ -1,9 +1,10 @@
 use std::path::{Path, PathBuf};
 
-use super::{Connectors, Oml, ProjectPaths, Sinks, Sources, Wpl};
+use super::{init::InitMode, Connectors, Oml, ProjectPaths, Sinks, Sources, Wpl};
 use crate::{
     models::knowledge::Knowledge, sinks::clean_outputs, wparse::WParseManager, wpgen::WpGenManager,
 };
+use wp_conf::engine::EngineConfig;
 use wp_error::run_error::RunResult;
 
 /// # WarpProject
@@ -21,6 +22,7 @@ use wp_error::run_error::RunResult;
 pub struct WarpProject {
     // 项目路径管理器
     paths: ProjectPaths,
+    pub(super) eng_conf: Option<EngineConfig>,
     // 连接器管理
     connectors: Connectors,
     // 输出接收器管理
@@ -40,21 +42,20 @@ pub struct WarpProject {
 }
 
 impl WarpProject {
-    /// 创建新的项目实例
-    pub fn new<P: AsRef<Path>>(work_root: P) -> Self {
-        let work_root_ref = work_root.as_ref();
-        let paths = ProjectPaths::from_root(work_root_ref);
+    fn build(work_root: &Path) -> Self {
+        let paths = ProjectPaths::from_root(work_root);
         let connectors = Connectors::new(paths.connectors.clone());
         let sinks_c = Sinks::new();
         let sources_c = Sources::new();
         let wpl = Wpl::new();
         let oml = Oml::new();
         let knowledge = Knowledge::new();
-        let wparse_manager = WParseManager::new(work_root_ref);
-        let wpgen_manager = WpGenManager::new(work_root_ref);
+        let wparse_manager = WParseManager::new(work_root);
+        let wpgen_manager = WpGenManager::new(work_root);
 
         Self {
             paths,
+            eng_conf: None,
             connectors,
             sinks_c,
             sources_c,
@@ -64,6 +65,25 @@ impl WarpProject {
             wparse_manager,
             wpgen_manager,
         }
+    }
+
+    /// 静态初始化：创建并初始化完整项目
+    pub fn init<P: AsRef<Path>>(work_root: P, mode: InitMode) -> RunResult<Self> {
+        let mut project = Self::build(work_root.as_ref());
+        project.init_components(mode)?;
+        Ok(project)
+    }
+
+    /// 静态加载：基于现有结构执行校验加载
+    pub fn load<P: AsRef<Path>>(work_root: P, mode: InitMode) -> RunResult<Self> {
+        let mut project = Self::build(work_root.as_ref());
+        project.load_components(mode)?;
+        Ok(project)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn bare<P: AsRef<Path>>(work_root: P) -> Self {
+        Self::build(work_root.as_ref())
     }
 
     /// 获取工作根目录（向后兼容）
@@ -100,6 +120,15 @@ impl WarpProject {
 
     pub fn knowledge(&self) -> &Knowledge {
         &self.knowledge
+    }
+
+    pub(crate) fn apply_engine_paths(&mut self) {
+        if let Some(conf) = &self.eng_conf {
+            let sink_root = Self::resolve_with_root(self.work_root_path(), conf.sink_root());
+            self.sinks_c.set_root(sink_root);
+            let src_root = Self::resolve_with_root(self.work_root_path(), conf.src_root());
+            self.sources_c.set_root(src_root);
+        }
     }
 
     // ========== 配置管理方法 ==========
