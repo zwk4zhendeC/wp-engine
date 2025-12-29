@@ -108,7 +108,6 @@ impl ConnectorDefProvider for TcpSourceFactory {
         params.insert("port".into(), json!(9000));
         params.insert("framing".into(), json!("auto"));
         params.insert("tcp_recv_bytes".into(), json!(256_000));
-        params.insert("prefer_newline".into(), json!(false));
         params.insert("instances".into(), json!(1));
         ConnectorDef {
             id: "tcp_src".into(),
@@ -119,7 +118,6 @@ impl ConnectorDefProvider for TcpSourceFactory {
                 "port".into(),
                 "framing".into(),
                 "tcp_recv_bytes".into(),
-                "prefer_newline".into(),
                 "instances".into(),
             ],
             default_params: params,

@@ -305,7 +305,7 @@ impl ConnectorDefProvider for SyslogFactory {
         params.insert("protocol".into(), json!("udp"));
         params.insert("strip_header".into(), json!(true));
         params.insert("attach_meta_tags".into(), json!(true));
-        params.insert("tcp_recv_bytes".into(), json!(10_485_760));
+        params.insert("tcp_recv_bytes".into(), json!(256000));
         ConnectorDef {
             id: "syslog_sink".into(),
             kind: self.kind().into(),

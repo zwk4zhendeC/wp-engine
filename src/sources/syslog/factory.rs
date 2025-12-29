@@ -138,7 +138,6 @@ impl ConnectorDefProvider for SyslogSourceFactory {
         params.insert("protocol".into(), json!("udp"));
         params.insert("tcp_recv_bytes".into(), json!(10_485_760));
         params.insert("header_mode".into(), json!("strip"));
-        params.insert("prefer_newline".into(), json!(false));
         ConnectorDef {
             id: "syslog_src".into(),
             kind: self.kind().into(),
@@ -149,7 +148,6 @@ impl ConnectorDefProvider for SyslogSourceFactory {
                 "protocol".into(),
                 "tcp_recv_bytes".into(),
                 "header_mode".into(),
-                "prefer_newline".into(),
             ],
             default_params: params,
             origin: Some("builtin:syslog_source".into()),

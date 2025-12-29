@@ -268,17 +268,11 @@ impl ConnectorDefProvider for TcpFactory {
         params.insert("addr".into(), json!("127.0.0.1"));
         params.insert("port".into(), json!(9000));
         params.insert("framing".into(), json!("line"));
-        params.insert("max_backoff".into(), json!(false));
         ConnectorDef {
             id: "tcp_sink".into(),
             kind: self.kind().into(),
             scope: ConnectorScope::Sink,
-            allow_override: vec![
-                "addr".into(),
-                "port".into(),
-                "framing".into(),
-                "max_backoff".into(),
-            ],
+            allow_override: vec!["addr".into(), "port".into(), "framing".into()],
             default_params: params,
             origin: Some("builtin:tcp_sink".into()),
         }
