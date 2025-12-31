@@ -1,5 +1,6 @@
 use std::net::IpAddr;
 
+use arcstr::ArcStr;
 use chrono::NaiveDateTime;
 use ipnet::IpNet;
 
@@ -64,6 +65,28 @@ thread_local! {
 }
 
 impl WildcardMatcher for String {
+    fn matches(&self, other: &Self) -> bool {
+        #[cfg(feature = "we_precompile")]
+        {
+            let pat = self.as_str();
+            let wm = WE_CACHE.with(|cell| {
+                let mut slot = cell.borrow_mut();
+                if slot.is_none() {
+                    *slot = Some(Lru::new(lru_capacity_from_env()));
+                }
+                let lru = slot.as_mut().unwrap();
+                lru.get_or_put(pat)
+            });
+            wm.matches(other.as_str())
+        }
+        #[cfg(not(feature = "we_precompile"))]
+        {
+            wildmatch::WildMatch::new(self.as_str()).matches(other.as_str())
+        }
+    }
+}
+
+impl WildcardMatcher for ArcStr {
     fn matches(&self, other: &Self) -> bool {
         #[cfg(feature = "we_precompile")]
         {

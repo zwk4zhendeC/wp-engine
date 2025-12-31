@@ -79,8 +79,9 @@ impl ToSql for SqlNamedParam {
         match self.0.get_value() {
             model::Value::Bool(v) => Ok(ToSqlOutput::Owned(Value::Integer(if *v { 1 } else { 0 }))),
             model::Value::Null => Ok(ToSqlOutput::Owned(Value::Null)),
-            model::Value::Chars(v) => Ok(ToSqlOutput::Owned(Value::Text(v.clone()))),
-            model::Value::Symbol(v) => Ok(ToSqlOutput::Owned(Value::Text(v.clone()))),
+            model::Value::Chars(v) => Ok(ToSqlOutput::Owned(Value::Text(v.to_string()))),
+            model::Value::SChars(v) => Ok(ToSqlOutput::Owned(Value::Text(v.to_string()))),
+            model::Value::Symbol(v) => Ok(ToSqlOutput::Owned(Value::Text(v.to_string()))),
             model::Value::Time(v) => Ok(ToSqlOutput::Owned(Value::Text(v.to_string()))),
             model::Value::Digit(v) => Ok(ToSqlOutput::Owned(Value::Integer(*v))),
             model::Value::Hex(v) => Ok(ToSqlOutput::Owned(Value::Text(v.to_string()))),
@@ -90,11 +91,11 @@ impl ToSql for SqlNamedParam {
             model::Value::Ignore(_) => Ok(ToSqlOutput::Owned(Value::Null)),
             model::Value::Obj(v) => Ok(ToSqlOutput::Owned(Value::Text(format!("{:?}", v)))),
             model::Value::Array(v) => Ok(ToSqlOutput::Owned(Value::Text(format!("{:?}", v)))),
-            model::Value::Domain(v) => Ok(ToSqlOutput::Owned(Value::Text(v.0.clone()))),
-            model::Value::Url(v) => Ok(ToSqlOutput::Owned(Value::Text(v.0.clone()))),
-            model::Value::Email(v) => Ok(ToSqlOutput::Owned(Value::Text(v.0.clone()))),
-            model::Value::IdCard(v) => Ok(ToSqlOutput::Owned(Value::Text(v.0.clone()))),
-            model::Value::MobilePhone(v) => Ok(ToSqlOutput::Owned(Value::Text(v.0.clone()))),
+            model::Value::Domain(v) => Ok(ToSqlOutput::Owned(Value::Text(v.0.to_string()))),
+            model::Value::Url(v) => Ok(ToSqlOutput::Owned(Value::Text(v.0.to_string()))),
+            model::Value::Email(v) => Ok(ToSqlOutput::Owned(Value::Text(v.0.to_string()))),
+            model::Value::IdCard(v) => Ok(ToSqlOutput::Owned(Value::Text(v.0.to_string()))),
+            model::Value::MobilePhone(v) => Ok(ToSqlOutput::Owned(Value::Text(v.0.to_string()))),
         }
     }
 }

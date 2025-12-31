@@ -4,10 +4,10 @@ use orion_conf::UvsConfFrom;
 use orion_error::ToStructError;
 use serde_json::json;
 use std::path::Path;
-use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider, ConnectorScope, ParamMap};
+use wp_conf::connectors::{ConnectorDef, ConnectorScope, ParamMap};
 use wp_connector_api::{
-    SourceBuildCtx, SourceFactory, SourceHandle, SourceMeta, SourceReason, SourceResult,
-    SourceSpec as ResolvedSourceSpec, SourceSvcIns,
+    SourceBuildCtx, SourceDefProvider, SourceFactory, SourceHandle, SourceMeta, SourceReason,
+    SourceResult, SourceSpec as ResolvedSourceSpec, SourceSvcIns,
 };
 use wp_data_model::tags::parse_tags;
 use wp_data_model::tags::validate_tags;
@@ -125,7 +125,7 @@ impl SourceFactory for FileSourceFactory {
     }
 }
 
-impl ConnectorDefProvider for FileSourceFactory {
+impl SourceDefProvider for FileSourceFactory {
     fn source_def(&self) -> ConnectorDef {
         let mut params = ParamMap::new();
         params.insert("base".into(), json!("./data/in_dat"));

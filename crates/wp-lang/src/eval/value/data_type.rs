@@ -6,7 +6,7 @@ use crate::eval::value::parser::physical::time::parse_time;
 use wp_model_core::model::DataType;
 use wp_model_core::model::data::Field;
 use wp_model_core::model::error::ModelError;
-use wp_model_core::model::{DateTimeValue, Maker};
+use wp_model_core::model::{DateTimeValue, Maker, Value};
 
 pub trait DataTypeParser {
     fn from_str<S: Into<String> + Display>(
@@ -26,6 +26,7 @@ where
     T: Maker<IpAddr>,
     T: Maker<bool>,
     T: Maker<DateTimeValue>,
+    T: Maker<Value>,
 {
     fn from_str<S: Into<String> + Display>(
         meta: DataType,

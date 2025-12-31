@@ -132,6 +132,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "69f7f8c3906b62b754cd5326047894316021dcfe5a194c8ea52bdd94934a3457"
 
 [[package]]
+name = "arcstr"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "03918c3dbd7701a85c6b9887732e2921175f26c350b4563841d0958c21d57e6d"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "arrayvec"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1942,8 +1951,9 @@ dependencies = [
 
 [[package]]
 name = "orion_exp"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
+ "arcstr",
  "chrono",
  "criterion",
  "derive-getters",
@@ -1953,7 +1963,7 @@ dependencies = [
 
 [[package]]
 name = "orion_overload"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "anyhow",
  "derive-getters",
@@ -3572,7 +3582,7 @@ checksum = "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59"
 
 [[package]]
 name = "wp-cli-core"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "anyhow",
  "orion-error",
@@ -3586,7 +3596,7 @@ dependencies = [
 
 [[package]]
 name = "wp-cli-utils"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "anyhow",
  "chrono",
@@ -3602,8 +3612,8 @@ dependencies = [
 
 [[package]]
 name = "wp-conf-base"
-version = "0.6.0"
-source = "git+https://github.com/wp-labs/wp-infras?tag=v0.6.0-alpha#d33b213109120faff5ce8a77360fe84fb0fe8e46"
+version = "0.6.1"
+source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#6f068ec07518b0cc9932537420353be7262a03f8"
 dependencies = [
  "anyhow",
  "derive_more",
@@ -3613,12 +3623,12 @@ dependencies = [
  "serde_json",
  "toml",
  "wp-connector-api",
- "wp-model-core 0.6.0",
+ "wp-model-core 0.6.1",
 ]
 
 [[package]]
 name = "wp-config"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3648,15 +3658,15 @@ dependencies = [
  "wp-knowledge",
  "wp-lang",
  "wp-log",
- "wp-model-core 0.6.0",
+ "wp-model-core 0.6.1",
  "wp-parser",
  "wp-specs",
 ]
 
 [[package]]
 name = "wp-connector-api"
-version = "0.6.0"
-source = "git+https://github.com/wp-labs/wp-open-api?tag=v0.6.0-alpha#3e3ad1b4fe01a70cb65368a5ee55e657c35e9ab4"
+version = "0.6.1"
+source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7#12e4b1dbec8d0bc4e6192bd15aa3edcaac8b11c7"
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -3669,7 +3679,7 @@ dependencies = [
  "smallvec",
  "thiserror 2.0.17",
  "toml",
- "wp-model-core 0.6.0",
+ "wp-model-core 0.6.1",
  "wp-parse-api",
 ]
 
@@ -3683,18 +3693,18 @@ dependencies = [
 
 [[package]]
 name = "wp-data-fmt"
-version = "0.6.0"
-source = "git+https://github.com/wp-labs/wp-infras?tag=v0.6.0-alpha#d33b213109120faff5ce8a77360fe84fb0fe8e46"
+version = "0.6.1"
+source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#6f068ec07518b0cc9932537420353be7262a03f8"
 dependencies = [
  "chrono",
  "serde",
  "serde_json",
- "wp-model-core 0.6.0",
+ "wp-model-core 0.6.1",
 ]
 
 [[package]]
 name = "wp-data-utils"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "anyhow",
  "arbitrary",
@@ -3708,12 +3718,12 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "wp-model-core 0.6.0",
+ "wp-model-core 0.6.1",
 ]
 
 [[package]]
 name = "wp-engine"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -3783,7 +3793,7 @@ dependencies = [
  "wp-knowledge",
  "wp-lang",
  "wp-log",
- "wp-model-core 0.6.0",
+ "wp-model-core 0.6.1",
  "wp-oml",
  "wp-parse-api",
  "wp-parser",
@@ -3801,8 +3811,8 @@ dependencies = [
 
 [[package]]
 name = "wp-error"
-version = "0.6.0"
-source = "git+https://github.com/wp-labs/wp-infras?tag=v0.6.0-alpha#d33b213109120faff5ce8a77360fe84fb0fe8e46"
+version = "0.6.1"
+source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#6f068ec07518b0cc9932537420353be7262a03f8"
 dependencies = [
  "chrono",
  "derive_more",
@@ -3818,7 +3828,7 @@ dependencies = [
 
 [[package]]
 name = "wp-knowledge"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "anyhow",
  "chrono",
@@ -3849,13 +3859,13 @@ dependencies = [
  "wp-data-utils",
  "wp-error",
  "wp-log",
- "wp-model-core 0.6.0",
+ "wp-model-core 0.6.1",
  "wp-specs",
 ]
 
 [[package]]
 name = "wp-lang"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "ahash",
  "anyhow",
@@ -3900,7 +3910,7 @@ dependencies = [
  "wp-data-fmt",
  "wp-error",
  "wp-log",
- "wp-model-core 0.6.0",
+ "wp-model-core 0.6.1",
  "wp-parse-api",
  "wp-parser",
  "wp-specs",
@@ -3908,8 +3918,8 @@ dependencies = [
 
 [[package]]
 name = "wp-log"
-version = "0.6.0"
-source = "git+https://github.com/wp-labs/wp-infras?tag=v0.6.0-alpha#d33b213109120faff5ce8a77360fe84fb0fe8e46"
+version = "0.6.1"
+source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#6f068ec07518b0cc9932537420353be7262a03f8"
 dependencies = [
  "anyhow",
  "getset",
@@ -3937,9 +3947,10 @@ dependencies = [
 
 [[package]]
 name = "wp-model-core"
-version = "0.6.0"
-source = "git+https://github.com/wp-labs/wp-open-api?tag=v0.6.0-alpha#3e3ad1b4fe01a70cb65368a5ee55e657c35e9ab4"
+version = "0.6.1"
+source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7#12e4b1dbec8d0bc4e6192bd15aa3edcaac8b11c7"
 dependencies = [
+ "arcstr",
  "chrono",
  "ipnet",
  "serde",
@@ -3952,7 +3963,7 @@ dependencies = [
 
 [[package]]
 name = "wp-oml"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3996,15 +4007,15 @@ dependencies = [
  "wp-knowledge",
  "wp-lang",
  "wp-log",
- "wp-model-core 0.6.0",
+ "wp-model-core 0.6.1",
  "wp-parser",
  "wp-specs",
 ]
 
 [[package]]
 name = "wp-parse-api"
-version = "0.6.0"
-source = "git+https://github.com/wp-labs/wp-open-api?tag=v0.6.0-alpha#3e3ad1b4fe01a70cb65368a5ee55e657c35e9ab4"
+version = "0.6.1"
+source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7#12e4b1dbec8d0bc4e6192bd15aa3edcaac8b11c7"
 dependencies = [
  "bytes",
  "derive_more",
@@ -4012,12 +4023,12 @@ dependencies = [
  "serde",
  "serde_derive",
  "thiserror 2.0.17",
- "wp-model-core 0.6.0",
+ "wp-model-core 0.6.1",
 ]
 
 [[package]]
 name = "wp-parser"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "criterion",
  "orion_exp",
@@ -4026,7 +4037,7 @@ dependencies = [
 
 [[package]]
 name = "wp-proj"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "anyhow",
  "comfy-table",
@@ -4054,8 +4065,8 @@ dependencies = [
 
 [[package]]
 name = "wp-specs"
-version = "0.6.0"
-source = "git+https://github.com/wp-labs/wp-infras?tag=v0.6.0-alpha#d33b213109120faff5ce8a77360fe84fb0fe8e46"
+version = "0.6.1"
+source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#6f068ec07518b0cc9932537420353be7262a03f8"
 dependencies = [
  "serde",
  "toml",
@@ -4065,7 +4076,7 @@ dependencies = [
 
 [[package]]
 name = "wp-stats"
-version = "1.6.0"
+version = "1.5.2"
 dependencies = [
  "anyhow",
  "chrono",
@@ -4087,7 +4098,7 @@ dependencies = [
  "toml",
  "wildmatch",
  "wp-log",
- "wp-model-core 0.6.0",
+ "wp-model-core 0.6.1",
 ]
 
 [[package]]

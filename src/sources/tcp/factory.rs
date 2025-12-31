@@ -1,11 +1,11 @@
 use orion_conf::UvsConfFrom;
 use orion_error::ToStructError;
 use serde_json::json;
-use wp_conf::connectors::{ConnectorDef, ConnectorDefProvider, ConnectorScope, ParamMap};
+use wp_conf::connectors::{ConnectorDef, ConnectorScope, ParamMap};
 use wp_connector_api::SourceReason;
 use wp_connector_api::{
-    AcceptorHandle, SourceBuildCtx, SourceFactory, SourceHandle, SourceMeta, SourceResult,
-    SourceSpec as ResolvedSourceSpec, SourceSvcIns,
+    AcceptorHandle, SourceBuildCtx, SourceDefProvider, SourceFactory, SourceHandle, SourceMeta,
+    SourceResult, SourceSpec as ResolvedSourceSpec, SourceSvcIns,
 };
 use wp_data_model::tags::{parse_tags, validate_tags};
 
@@ -101,7 +101,7 @@ impl SourceFactory for TcpSourceFactory {
     }
 }
 
-impl ConnectorDefProvider for TcpSourceFactory {
+impl SourceDefProvider for TcpSourceFactory {
     fn source_def(&self) -> ConnectorDef {
         let mut params = ParamMap::new();
         params.insert("addr".into(), json!("0.0.0.0"));
