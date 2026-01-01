@@ -3617,7 +3617,7 @@ dependencies = [
 [[package]]
 name = "wp-conf-base"
 version = "0.6.1"
-source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#31b429f3052d1c44c3b11a0347a569a34d6cbcac"
+source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#4d111f6ffa90e635ad5ed07d53949b5bfc0c1c34"
 dependencies = [
  "anyhow",
  "derive_more",
@@ -3670,7 +3670,7 @@ dependencies = [
 [[package]]
 name = "wp-connector-api"
 version = "0.6.1"
-source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7#c63cfc644d2eb69c43ce5fe59232f18bc5ffbfe2"
+source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7#dc78c73dfee6abab6e0d947bd0324134ec09b8d6"
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -3698,7 +3698,7 @@ dependencies = [
 [[package]]
 name = "wp-data-fmt"
 version = "0.6.1"
-source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#31b429f3052d1c44c3b11a0347a569a34d6cbcac"
+source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#4d111f6ffa90e635ad5ed07d53949b5bfc0c1c34"
 dependencies = [
  "chrono",
  "serde",
@@ -3712,6 +3712,7 @@ version = "1.6.2"
 dependencies = [
  "anyhow",
  "arbitrary",
+ "arcstr",
  "chrono",
  "derive_builder",
  "libfuzzer-sys",
@@ -3818,7 +3819,7 @@ dependencies = [
 [[package]]
 name = "wp-error"
 version = "0.6.1"
-source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#31b429f3052d1c44c3b11a0347a569a34d6cbcac"
+source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#4d111f6ffa90e635ad5ed07d53949b5bfc0c1c34"
 dependencies = [
  "chrono",
  "derive_more",
@@ -3926,7 +3927,7 @@ dependencies = [
 [[package]]
 name = "wp-log"
 version = "0.6.1"
-source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#31b429f3052d1c44c3b11a0347a569a34d6cbcac"
+source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#4d111f6ffa90e635ad5ed07d53949b5bfc0c1c34"
 dependencies = [
  "anyhow",
  "getset",
@@ -3955,7 +3956,7 @@ dependencies = [
 [[package]]
 name = "wp-model-core"
 version = "0.6.1"
-source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7#c63cfc644d2eb69c43ce5fe59232f18bc5ffbfe2"
+source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7#dc78c73dfee6abab6e0d947bd0324134ec09b8d6"
 dependencies = [
  "arcstr",
  "chrono",
@@ -4022,7 +4023,7 @@ dependencies = [
 [[package]]
 name = "wp-parse-api"
 version = "0.6.1"
-source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7#c63cfc644d2eb69c43ce5fe59232f18bc5ffbfe2"
+source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7#dc78c73dfee6abab6e0d947bd0324134ec09b8d6"
 dependencies = [
  "bytes",
  "derive_more",
@@ -4073,7 +4074,7 @@ dependencies = [
 [[package]]
 name = "wp-specs"
 version = "0.6.1"
-source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#31b429f3052d1c44c3b11a0347a569a34d6cbcac"
+source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7#4d111f6ffa90e635ad5ed07d53949b5bfc0c1c34"
 dependencies = [
  "serde",
  "toml",

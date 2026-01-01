@@ -65,7 +65,7 @@ pub fn take_sql_tval(input: &mut &str) -> WResult<Value> {
     )))
     .parse_next(input)?;
     if let Some(chars) = chars {
-        return Ok(Value::Chars(chars.to_string()));
+        return Ok(Value::Chars(chars.into()));
     }
     if let Some(value) = opt(take_while(0.., ('0'..='9', '.', '-', '+'))).parse_next(input)? {
         if let Ok(digit) = value.parse::<i64>() {
@@ -77,7 +77,7 @@ pub fn take_sql_tval(input: &mut &str) -> WResult<Value> {
 
     //fail get value;
     "fail-value".parse_next(input)?;
-    Ok(Value::Chars("fail-value".to_string()))
+    Ok(Value::Chars("fail-value".into()))
 }
 
 pub fn quot_str<'a>(input: &mut &'a str) -> WResult<&'a str> {

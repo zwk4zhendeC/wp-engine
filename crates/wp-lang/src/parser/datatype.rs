@@ -1,5 +1,6 @@
 use crate::DataTypeParser;
 use crate::parser::utils::take_meta_name;
+use arcstr::ArcStr;
 use std::fmt::Display;
 use winnow::ascii::multispace0;
 use winnow::combinator::fail;
@@ -29,7 +30,7 @@ pub fn take_datatype_impl(data: &mut &str) -> WResult<DataType> {
     }
 }
 
-pub fn field_ins<S: Into<String> + Display>(meta: DataType, name: S, val: S) -> WResult<DataField> {
+pub fn field_ins<S: Into<ArcStr> + Display>(meta: DataType, name: S, val: S) -> WResult<DataField> {
     if let Ok(tdo) = DataField::from_str(meta, name, val) {
         Ok(tdo)
     } else {

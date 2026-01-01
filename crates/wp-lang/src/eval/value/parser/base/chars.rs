@@ -39,7 +39,8 @@ impl PatternParser for CharsP {
         out.push(DataField::new_opt(
             DataType::Chars,
             Some(name),
-            Value::Chars(buffer.trim().to_string()),
+            //Value::Chars(buffer.trim().to_string()),
+            Value::Chars(buffer.trim().into()),
         ));
         Ok(())
     }
