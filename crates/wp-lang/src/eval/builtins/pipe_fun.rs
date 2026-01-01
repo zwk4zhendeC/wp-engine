@@ -81,7 +81,7 @@ impl FieldPipe for FdHas {
     }
 
     fn auto_select<'a>(&'a self) -> Option<FieldSelectorSpec<'a>> {
-        self.found.as_deref().map(FieldSelectorSpec::Take)
+        self.target.as_deref().map(FieldSelectorSpec::Take)
     }
 }
 
@@ -216,7 +216,7 @@ impl FieldPipe for Base64Decode {
 impl WplFun {
     pub fn as_field_pipe(&self) -> Option<&dyn FieldPipe> {
         match self {
-            WplFun::Take(_) | WplFun::Last(_) => None,
+            WplFun::SelectTake(_) | WplFun::SelectLast(_) => None,
             WplFun::FCharsExists(fun) => Some(fun),
             WplFun::FCharsNotExists(fun) => Some(fun),
             WplFun::FCharsIn(fun) => Some(fun),
@@ -224,15 +224,15 @@ impl WplFun {
             WplFun::FDigitIn(fun) => Some(fun),
             WplFun::FIpAddrIn(fun) => Some(fun),
             WplFun::FExists(fun) => Some(fun),
-            WplFun::CUnescape(fun) => Some(fun),
-            WplFun::CBase64Decode(fun) => Some(fun),
+            WplFun::TransJsonUnescape(fun) => Some(fun),
+            WplFun::TransBase64Decode(fun) => Some(fun),
         }
     }
 
     pub fn as_field_selector(&self) -> Option<&dyn FieldSelector> {
         match self {
-            WplFun::Take(selector) => Some(selector),
-            WplFun::Last(selector) => Some(selector),
+            WplFun::SelectTake(selector) => Some(selector),
+            WplFun::SelectLast(selector) => Some(selector),
             _ => None,
         }
     }

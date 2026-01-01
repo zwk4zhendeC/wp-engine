@@ -1,10 +1,10 @@
 use std::net::IpAddr;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct ExistsChars(pub(crate) String);
+pub struct CharsValue(pub(crate) String);
 #[derive(Clone, Debug, PartialEq)]
 pub struct FdHas {
-    pub(crate) found: Option<String>,
+    pub(crate) target: Option<String>,
 }
 #[derive(Clone, Debug, PartialEq)]
 pub struct FCharsHas {
@@ -39,9 +39,9 @@ pub struct FIpAddrIn {
 }
 
 impl FdHas {
-    pub fn new<S: Into<String>>(found: S) -> Self {
+    pub fn new<S: Into<String>>(target: S) -> Self {
         Self {
-            found: Some(found.into()),
+            target: Some(target.into()),
         }
     }
 }

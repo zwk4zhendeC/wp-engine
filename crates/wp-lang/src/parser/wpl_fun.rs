@@ -20,7 +20,7 @@ use wp_parser::{
 use crate::ast::{
     WplFun,
     processor::{
-        ExistsChars, FCharsHas, FCharsIn, FCharsNotHas, FDigitHas, FDigitIn, FIpAddrIn, FdHas,
+        CharsValue, FCharsHas, FCharsIn, FCharsNotHas, FDigitHas, FDigitIn, FIpAddrIn, FdHas,
         SelectLast, TakeField,
     },
 };
@@ -30,8 +30,8 @@ use super::utils::take_key;
 pub fn wpl_fun(input: &mut &str) -> WResult<WplFun> {
     multispace0.parse_next(input)?;
     let fun = alt((
-        call_fun_args1::<TakeField>.map(WplFun::Take),
-        call_fun_args0::<SelectLast>.map(WplFun::Last),
+        call_fun_args1::<TakeField>.map(WplFun::SelectTake),
+        call_fun_args0::<SelectLast>.map(WplFun::SelectLast),
         call_fun_args2::<FCharsHas>.map(WplFun::FCharsExists),
         call_fun_args1::<CharsHasAlias>.map(|alias| {
             WplFun::FCharsExists(FCharsHas {
@@ -75,9 +75,9 @@ pub fn wpl_fun(input: &mut &str) -> WResult<WplFun> {
             })
         }),
         call_fun_args1::<FdHas>.map(WplFun::FExists),
-        call_fun_args0::<HasAlias>.map(|_| WplFun::FExists(FdHas { found: None })),
-        call_fun_args0::<JsonUnescape>.map(WplFun::CUnescape),
-        call_fun_args0::<Base64Decode>.map(WplFun::CBase64Decode),
+        call_fun_args0::<HasAlias>.map(|_| WplFun::FExists(FdHas { target: None })),
+        call_fun_args0::<JsonUnescape>.map(WplFun::TransJsonUnescape),
+        call_fun_args0::<Base64Decode>.map(WplFun::TransBase64Decode),
     ))
     .parse_next(input)?;
     Ok(fun)
@@ -147,10 +147,10 @@ impl Fun1Builder for CharsNotHasAlias {
 }
 
 impl Fun1Builder for CharsInAlias {
-    type ARG1 = Vec<ExistsChars>;
+    type ARG1 = Vec<CharsValue>;
 
     fn args1(data: &mut &str) -> WResult<Self::ARG1> {
-        take_arr::<ExistsChars>(data)
+        take_arr::<CharsValue>(data)
     }
 
     fn fun_name() -> &'static str {
@@ -274,15 +274,15 @@ impl Fun2Builder for FCharsNotHas {
     }
 }
 
-impl ParseNext<ExistsChars> for ExistsChars {
-    fn parse_next(input: &mut &str) -> WResult<ExistsChars> {
+impl ParseNext<CharsValue> for CharsValue {
+    fn parse_next(input: &mut &str) -> WResult<CharsValue> {
         let val = take_path.parse_next(input)?;
-        Ok(ExistsChars(val.to_string()))
+        Ok(CharsValue(val.to_string()))
     }
 }
 impl Fun2Builder for FCharsIn {
     type ARG1 = String;
-    type ARG2 = Vec<ExistsChars>;
+    type ARG2 = Vec<CharsValue>;
     fn args1(data: &mut &str) -> WResult<Self::ARG1> {
         multispace0.parse_next(data)?;
         let val = take_key.parse_next(data)?;
@@ -290,7 +290,7 @@ impl Fun2Builder for FCharsIn {
     }
 
     fn args2(data: &mut &str) -> WResult<Self::ARG2> {
-        take_arr::<ExistsChars>(data)
+        take_arr::<CharsValue>(data)
     }
 
     fn fun_name() -> &'static str {
@@ -344,7 +344,7 @@ impl Fun1Builder for FdHas {
 
     fn build(args: Self::ARG1) -> Self {
         Self {
-            found: normalize_target(args),
+            target: normalize_target(args),
         }
     }
 }
@@ -478,12 +478,12 @@ mod tests {
         assert_eq!(
             fun,
             WplFun::FExists(FdHas {
-                found: Some("src".to_string())
+                target: Some("src".to_string())
             })
         );
 
         let fun = wpl_fun.parse("has()").assert();
-        assert_eq!(fun, WplFun::FExists(FdHas { found: None }));
+        assert_eq!(fun, WplFun::FExists(FdHas { target: None }));
 
         let fun = wpl_fun.parse(r#"f_digit_in(src, [1,2,3])"#).assert();
         assert_eq!(
@@ -554,20 +554,20 @@ mod tests {
         );
 
         let fun = wpl_fun.parse("json_unescape()").assert();
-        assert_eq!(fun, WplFun::CUnescape(JsonUnescape {}));
+        assert_eq!(fun, WplFun::TransJsonUnescape(JsonUnescape {}));
 
         assert!(wpl_fun.parse("json_unescape(decoded)").is_err());
 
         let fun = wpl_fun.parse("take(src)").assert();
         assert_eq!(
             fun,
-            WplFun::Take(TakeField {
+            WplFun::SelectTake(TakeField {
                 target: "src".to_string(),
             })
         );
 
         let fun = wpl_fun.parse("last()").assert();
-        assert_eq!(fun, WplFun::Last(SelectLast {}));
+        assert_eq!(fun, WplFun::SelectLast(SelectLast {}));
 
         let fun = wpl_fun.parse("f_chars_has(_, foo)").assert();
         assert_eq!(
@@ -606,7 +606,7 @@ mod tests {
         );
 
         let fun = wpl_fun.parse("base64_decode()").assert();
-        assert_eq!(fun, WplFun::CBase64Decode(Base64Decode {}));
+        assert_eq!(fun, WplFun::TransBase64Decode(Base64Decode {}));
         assert!(wpl_fun.parse("base64_decode(decoded)").is_err());
     }
 }
