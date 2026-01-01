@@ -22,8 +22,8 @@ use crate::ast::{
     processor::{
         CharsHas, CharsIn, CharsInArg, CharsNotHas, CharsNotHasArg, CharsValue, DigitHas,
         DigitHasArg, DigitIn, DigitInArg, Has, HasArg, IpIn, IpInArg, SelectLast, TakeField,
-        TargetCharsHas, TargetCharsIn, TargetCharsNotHas, TargetDigitHas, TargetDigitIn,
-        TargetHas, TargetIpIn, normalize_target,
+        TargetCharsHas, TargetCharsIn, TargetCharsNotHas, TargetDigitHas, TargetDigitIn, TargetHas,
+        TargetIpIn, normalize_target,
     },
 };
 
@@ -37,21 +37,14 @@ pub fn wpl_fun(input: &mut &str) -> WResult<WplFun> {
         call_fun_args2::<TargetCharsHas>.map(WplFun::TargetCharsHas),
         call_fun_args1::<CharsHas>.map(WplFun::CharsHas),
         call_fun_args2::<TargetCharsNotHas>.map(WplFun::TargetCharsNotHas),
-        call_fun_args1::<CharsNotHasArg>.map(|arg| {
-            WplFun::CharsNotHas(CharsNotHas { value: arg.value })
-        }),
+        call_fun_args1::<CharsNotHasArg>
+            .map(|arg| WplFun::CharsNotHas(CharsNotHas { value: arg.value })),
         call_fun_args2::<TargetCharsIn>.map(WplFun::TargetCharsIn),
-        call_fun_args1::<CharsInArg>.map(|arg| {
-            WplFun::CharsIn(CharsIn { value: arg.value })
-        }),
+        call_fun_args1::<CharsInArg>.map(|arg| WplFun::CharsIn(CharsIn { value: arg.value })),
         call_fun_args2::<TargetDigitHas>.map(WplFun::TargetDigitHas),
-        call_fun_args1::<DigitHasArg>.map(|arg| {
-            WplFun::DigitHas(DigitHas { value: arg.value })
-        }),
+        call_fun_args1::<DigitHasArg>.map(|arg| WplFun::DigitHas(DigitHas { value: arg.value })),
         call_fun_args2::<TargetDigitIn>.map(WplFun::TargetDigitIn),
-        call_fun_args1::<DigitInArg>.map(|arg| {
-            WplFun::DigitIn(DigitIn { value: arg.value })
-        }),
+        call_fun_args1::<DigitInArg>.map(|arg| WplFun::DigitIn(DigitIn { value: arg.value })),
         call_fun_args2::<TargetIpIn>.map(WplFun::TargetIpIn),
         call_fun_args1::<IpInArg>.map(|arg| WplFun::IpIn(IpIn { value: arg.value })),
         call_fun_args1::<TargetHas>.map(WplFun::TargetHas),
@@ -438,18 +431,10 @@ mod tests {
         );
 
         let fun = wpl_fun.parse("digit_has(42)").assert();
-        assert_eq!(
-            fun,
-            WplFun::DigitHas(DigitHas { value: 42 })
-        );
+        assert_eq!(fun, WplFun::DigitHas(DigitHas { value: 42 }));
 
         let fun = wpl_fun.parse("digit_in([4,5])").assert();
-        assert_eq!(
-            fun,
-            WplFun::DigitIn(DigitIn {
-                value: vec![4, 5],
-            })
-        );
+        assert_eq!(fun, WplFun::DigitIn(DigitIn { value: vec![4, 5] }));
 
         let fun = wpl_fun
             .parse(r#"f_ip_in(src, [127.0.0.1, 127.0.0.2])"#)
