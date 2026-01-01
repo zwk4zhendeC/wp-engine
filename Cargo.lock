@@ -3875,6 +3875,7 @@ version = "1.6.2"
 dependencies = [
  "ahash",
  "anyhow",
+ "arcstr",
  "arrayvec",
  "base64 0.22.1",
  "bytes",

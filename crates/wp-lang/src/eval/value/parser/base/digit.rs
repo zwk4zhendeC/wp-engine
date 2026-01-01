@@ -207,17 +207,17 @@ mod tests {
         let tdc_assert = DataRecord::from(vec![
             DataField {
                 meta: DataType::Digit,
-                name: "digit".to_string(),
+                name: "digit".into(),
                 value: Value::Digit(1.into()),
             },
             DataField {
                 meta: DataType::Chars,
-                name: "x".to_string(),
+                name: "x".into(),
                 value: Value::Chars("".into()),
             },
             DataField {
                 meta: DataType::Digit,
-                name: "digit".to_string(),
+                name: "digit".into(),
                 value: Value::Digit(3.into()),
             },
         ]);
@@ -235,17 +235,17 @@ mod tests {
         let tdc_assert = DataRecord::from(vec![
             DataField {
                 meta: DataType::Digit,
-                name: "digit".to_string(),
+                name: "digit".into(),
                 value: Value::Digit(1.into()),
             },
             DataField {
                 meta: DataType::Digit,
-                name: "digit".to_string(),
+                name: "digit".into(),
                 value: Value::Digit(2.into()),
             },
             DataField {
                 meta: DataType::Digit,
-                name: "digit".to_string(),
+                name: "digit".into(),
                 value: Value::Digit(3.into()),
             },
         ]);

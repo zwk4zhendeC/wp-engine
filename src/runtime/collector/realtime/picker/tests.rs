@@ -3,7 +3,6 @@ use async_trait::async_trait;
 use std::sync::Arc;
 use wp_connector_api::{DataSource, SourceBatch, SourceEvent, Tags};
 use wp_connector_api::{SourceError, SourceReason, SourceResult};
-use wp_model_core::model::TagSet;
 use wp_parse_api::RawData;
 
 // Basic smoke-tests to ensure signatures and lifecycle keep working after refactor.
@@ -19,10 +18,7 @@ impl DataSource for MockDataSource {
     async fn receive(&mut self) -> SourceResult<SourceBatch> {
         if self.data_count > 0 {
             self.data_count -= 1;
-            let mut st = Tags::new();
-            for (k, v) in TagSet::default().item.iter() {
-                st.set(k.clone(), v.clone());
-            }
+            let st = Tags::new();
             Ok(vec![SourceEvent::new(
                 next_event_id(),
                 Arc::new(self.id.clone()),

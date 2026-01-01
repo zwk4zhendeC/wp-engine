@@ -6,6 +6,7 @@
 use async_broadcast::broadcast;
 use std::collections::HashMap;
 use tokio::sync::mpsc;
+use wp_connector_api::Tags;
 use wp_engine::facade::generator::rule_gen_run;
 use wp_engine::facade::kit::engine_check;
 use wp_engine::facade::test_helpers::ActorCtrlCmd;
@@ -15,7 +16,6 @@ use wp_engine::facade::test_helpers::SinkTerminal;
 use wp_engine::facade::test_helpers::{
     ActParser, ActorWork, ParseWorkerSender, RuleGRA, async_test_prepare, read_data,
 };
-use wp_model_core::model::TagSet;
 use wp_model_core::model::fmt_def::TextFmt;
 
 use wp_engine::facade::kit::WplCodePKG;
@@ -64,7 +64,7 @@ async fn actor_workflows_process_http_logs_with_base64_decoding() -> AnyResult<(
     let read_result = read_data(
         &mut input_io,
         source_key.to_string(),
-        TagSet::default(),
+        Tags::default(),
         command_sender.clone(),
         subscription_channel,
         args.line_max,
