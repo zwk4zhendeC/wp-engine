@@ -568,8 +568,8 @@ mod tests {
         println!("All registered processors: {:?}", processors);
 
         // Verify both naming approaches work (names are converted to uppercase)
-        assert!(processors.contains(&"DIRECT-TEST".to_string()));
-        assert!(processors.contains(&"PLG_PIPE/MOCK-PREFIX".to_string()));
+        assert!(processors.contains(&"DIRECT-TEST".into()));
+        assert!(processors.contains(&"PLG_PIPE/MOCK-PREFIX".into()));
 
         Ok(())
     }

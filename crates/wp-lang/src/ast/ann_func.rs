@@ -128,7 +128,7 @@ mod tests {
     #[test]
     fn test_tag_fun() {
         let ann = AnnFun {
-            tags: BTreeMap::from([("tag_1".to_string(), "x".to_string())]),
+            tags: BTreeMap::from([("tag_1".into(), "x".into())]),
             copy_raw: None,
         };
         let tag = AnnotationType::convert(&Some(ann));
@@ -150,7 +150,7 @@ mod tests {
     fn test_copy_fun() {
         let ann = AnnFun {
             tags: Default::default(),
-            copy_raw: Some(("name".to_string(), "raw".to_string())),
+            copy_raw: Some(("name".into(), "raw".into())),
         };
         let tag = AnnotationType::convert(&Some(ann));
         let mut data = DataRecord::test_value();
