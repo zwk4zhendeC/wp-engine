@@ -1,4 +1,5 @@
 use once_cell::sync::Lazy;
+use smol_str::SmolStr;
 use std::collections::HashMap;
 use std::sync::{Mutex, MutexGuard};
 
@@ -8,21 +9,22 @@ pub type PlgPipeUnitBuilder = fn() -> PipeHold;
 
 #[derive(Default)]
 struct PlgPipeUnitRegistry {
-    builders: HashMap<String, PlgPipeUnitBuilder>,
+    builders: HashMap<SmolStr, PlgPipeUnitBuilder>,
 }
 
 impl PlgPipeUnitRegistry {
     fn register(&mut self, name: &str, builder: PlgPipeUnitBuilder) {
-        self.builders.insert(name.to_ascii_uppercase(), builder);
+        self.builders
+            .insert(SmolStr::from(name.to_ascii_uppercase()), builder);
     }
 
     fn create(&self, name: &str) -> Option<PipeHold> {
         self.builders
-            .get(&name.to_ascii_uppercase())
+            .get(&SmolStr::from(name.to_ascii_uppercase()))
             .map(|builder| (builder)())
     }
 
-    fn list(&self) -> Vec<String> {
+    fn list(&self) -> Vec<SmolStr> {
         self.builders.keys().cloned().collect()
     }
 }
@@ -44,7 +46,7 @@ pub fn create_pipe_unit(name: &str) -> Option<PipeHold> {
     registry().create(name)
 }
 
-pub fn list_pipe_units() -> Vec<String> {
+pub fn list_pipe_units() -> Vec<SmolStr> {
     registry().list()
 }
 

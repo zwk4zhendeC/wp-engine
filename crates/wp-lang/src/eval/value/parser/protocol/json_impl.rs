@@ -256,7 +256,7 @@ impl JsonProc {
                 {
                     let mut ups_sep = fpu.conf().resolve_sep(upper_sep);
                     if ups_sep.is_space_sep() {
-                        ups_sep.set_current("\\0".into())
+                        ups_sep.set_current("\\0")
                     }
 
                     let mut raw_ref = raw.as_str();

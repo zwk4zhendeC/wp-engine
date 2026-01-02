@@ -1,6 +1,7 @@
 use crate::ast::AnnFun;
 use crate::{WparseError, WparseReason};
 use orion_error::{ToStructError, UvsDataFrom};
+use smol_str::SmolStr;
 use std::collections::BTreeMap;
 use wp_connector_api::SourceEvent;
 use wp_model_core::model::{DataField, DataRecord};
@@ -12,13 +13,13 @@ pub trait AnnotationFunc {
 
 #[derive(Clone, Debug)]
 pub struct TagAnnotation {
-    args: BTreeMap<String, String>,
+    args: BTreeMap<SmolStr, SmolStr>,
 }
 
 impl AnnotationFunc for TagAnnotation {
     fn proc(&self, _src: &SourceEvent, data: &mut DataRecord) -> Result<(), WparseError> {
         for (key, val) in &self.args {
-            data.append(DataField::from_chars(key, val));
+            data.append(DataField::from_chars(key.clone(), val.clone()));
         }
         Ok(())
     }
@@ -35,7 +36,7 @@ impl AnnotationFunc for NoopAnnotation {
 
 #[derive(Clone, Debug)]
 pub struct RawCopy {
-    raw_key: String,
+    raw_key: SmolStr,
 }
 
 impl AnnotationFunc for RawCopy {

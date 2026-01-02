@@ -6,6 +6,7 @@ use winnow::token::{literal, none_of, one_of, take, take_until, take_while};
 use wp_model_core::model::Value;
 use wp_parser::Parser;
 use wp_parser::WResult;
+use smol_str::SmolStr;
 
 use wp_parser::symbol::ctx_desc;
 
@@ -236,17 +237,17 @@ fn decode_escapes(s: &str) -> String {
     String::from_utf8_lossy(&out).to_string()
 }
 
-pub fn take_tag_kv(input: &mut &str) -> WResult<(String, String)> {
+pub fn take_tag_kv(input: &mut &str) -> WResult<(SmolStr, SmolStr)> {
     // 值支持普通引号字符串与原始字符串；普通字符串会做一次反转义，原始字符串保持原样
     separated_pair(
         preceded(multispace0, take_key),
         (multispace0, ':', multispace0),
         alt((
-            quot_r_str.map(|s: &str| s.to_string()),
-            quot_str.map(|s: &str| decode_escapes(s)),
+            quot_r_str.map(|s: &str| SmolStr::from(s)),
+            quot_str.map(|s: &str| SmolStr::from(decode_escapes(s))),
         )),
     )
-    .map(|(k, v)| (k.to_string(), v))
+    .map(|(k, v)| (SmolStr::from(k), v))
     .parse_next(input)
 }
 

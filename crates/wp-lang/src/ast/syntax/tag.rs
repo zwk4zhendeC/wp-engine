@@ -8,8 +8,8 @@ use crate::ast::WplTag;
 use crate::ast::debug::{DebugFormat, DepIndent};
 use crate::parser::MergeTags;
 
-pub type TagKvs = BTreeMap<String, String>;
-pub type CopyRaw = (String, String);
+pub type TagKvs = BTreeMap<SmolStr, SmolStr>;
+pub type CopyRaw = (SmolStr, SmolStr);
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum AnnEnum {
@@ -19,7 +19,7 @@ pub enum AnnEnum {
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct AnnFun {
     pub tags: TagKvs,
-    pub copy_raw: Option<(String, String)>,
+    pub copy_raw: Option<CopyRaw>,
 }
 
 impl MergeTags for AnnFun {
@@ -27,7 +27,7 @@ impl MergeTags for AnnFun {
         if let Some(atags) = other_tags {
             for (other_k, other_v) in &atags.tags {
                 if self.tags.get_mut(other_k).is_none() {
-                    self.tags.insert(other_k.to_string(), other_v.to_string());
+                    self.tags.insert(other_k.clone(), other_v.clone());
                 }
             }
 
@@ -42,7 +42,7 @@ impl AnnFun {
     pub fn export_tags(&self) -> Vec<WplTag> {
         let mut tags = Vec::new();
         for (k, v) in &self.tags {
-            tags.push(WplTag::new(SmolStr::from(k.as_str()), SmolStr::from(v.as_str())))
+            tags.push(WplTag::new(k.clone(), v.clone()))
         }
         tags
     }

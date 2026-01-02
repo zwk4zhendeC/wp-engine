@@ -2,6 +2,7 @@ use crate::ast::AnnEnum;
 use crate::ast::AnnFun;
 use crate::ast::TagKvs;
 use crate::parser::utils;
+use smol_str::SmolStr;
 use winnow::ascii::multispace0;
 use winnow::combinator::{alt, cut_err, delimited, separated};
 use winnow::token::literal;
@@ -10,7 +11,7 @@ use wp_parser::WResult;
 use wp_parser::symbol::ctx_desc;
 
 fn wpl_tags(input: &mut &str) -> WResult<AnnEnum> {
-    let tags: Vec<(String, String)> = delimited(
+    let tags: Vec<(SmolStr, SmolStr)> = delimited(
         (multispace0, literal("tag"), multispace0, literal('(')),
         cut_err(separated(1.., utils::take_tag_kv, literal(",")))
             .context(ctx_desc("tag(key: \"val\", ... )")),

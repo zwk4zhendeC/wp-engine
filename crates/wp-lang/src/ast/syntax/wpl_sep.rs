@@ -1,6 +1,7 @@
 use crate::ast::{GenFmt, WplFmt};
 use crate::parser::utils::{quot_r_str, quot_str, take_to_end};
 use derive_getters::Getters;
+use smol_str::SmolStr;
 use std::fmt::{Display, Formatter};
 use winnow::combinator::{alt, opt, separated};
 use winnow::stream::Range;
@@ -13,14 +14,14 @@ const DEFAULT_SEP: &str = " ";
 pub struct WplSep {
     prio: usize,
     cur_val: Option<SepEnum>,
-    ups_val: Option<String>,
+    ups_val: Option<SmolStr>,
     infer: bool,
     is_take: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum SepEnum {
-    Str(String),
+    Str(SmolStr),
     End,
 }
 impl From<&str> for SepEnum {
@@ -37,6 +38,18 @@ impl From<&str> for SepEnum {
 
 impl From<String> for SepEnum {
     fn from(value: String) -> Self {
+        if value == "\\0" {
+            SepEnum::End
+        } else if value == "\\s" {
+            SepEnum::Str(" ".into())
+        } else {
+            SepEnum::Str(value.into())
+        }
+    }
+}
+
+impl From<SmolStr> for SepEnum {
+    fn from(value: SmolStr) -> Self {
         if value == "\\0" {
             SepEnum::End
         } else if value == "\\s" {
@@ -60,7 +73,7 @@ impl Default for WplSep {
 
 impl WplSep {
     /// 字段级分隔符（优先级 3），覆盖组级与上游
-    pub fn field_sep<S: Into<String>>(val: S) -> Self {
+    pub fn field_sep<S: Into<SmolStr>>(val: S) -> Self {
         Self {
             prio: 3,
             cur_val: Some(SepEnum::from(val.into())),
@@ -75,8 +88,8 @@ impl WplSep {
             self.cur_val = other.cur_val;
         }
     }
-    pub fn set_current(&mut self, sep: String) {
-        self.cur_val = Some(SepEnum::from(sep))
+    pub fn set_current<S: Into<SmolStr>>(&mut self, sep: S) {
+        self.cur_val = Some(SepEnum::from(sep.into()))
     }
     pub fn is_unset(&self) -> bool {
         self.cur_val().is_none()
@@ -104,7 +117,7 @@ impl WplSep {
             DEFAULT_SEP
         }
     }
-    pub fn inherited_sep<S: Into<String>>(val: S) -> Self {
+    pub fn inherited_sep<S: Into<SmolStr>>(val: S) -> Self {
         Self {
             prio: 1,
             cur_val: Some(SepEnum::from(val.into())),
@@ -113,7 +126,7 @@ impl WplSep {
             is_take: true,
         }
     }
-    pub fn infer_inherited_sep<S: Into<String>>(val: S) -> Self {
+    pub fn infer_inherited_sep<S: Into<SmolStr>>(val: S) -> Self {
         Self {
             prio: 1,
             cur_val: Some(SepEnum::from(val.into())),
@@ -122,7 +135,7 @@ impl WplSep {
             is_take: true,
         }
     }
-    pub fn infer_group_sep<S: Into<String>>(val: S) -> Self {
+    pub fn infer_group_sep<S: Into<SmolStr>>(val: S) -> Self {
         Self {
             prio: 2,
             cur_val: Some(SepEnum::from(val.into())),
@@ -136,7 +149,7 @@ impl WplSep {
         c.infer = true;
         c
     }
-    pub fn group_sep<S: Into<String>>(val: S) -> Self {
+    pub fn group_sep<S: Into<SmolStr>>(val: S) -> Self {
         Self {
             prio: 2,
             cur_val: Some(SepEnum::from(val.into())),
@@ -145,7 +158,7 @@ impl WplSep {
             is_take: true,
         }
     }
-    pub fn field_sep_until<S: Into<String>>(val: S, sec: S, is_take: bool) -> Self {
+    pub fn field_sep_until<S: Into<SmolStr>>(val: S, sec: S, is_take: bool) -> Self {
         Self {
             prio: 3,
             cur_val: Some(SepEnum::from(val.into())),
@@ -154,7 +167,7 @@ impl WplSep {
             is_take,
         }
     }
-    pub fn infer_field_sep<S: Into<String>>(val: S) -> Self {
+    pub fn infer_field_sep<S: Into<SmolStr>>(val: S) -> Self {
         Self {
             prio: 3,
             cur_val: Some(SepEnum::from(val.into())),
