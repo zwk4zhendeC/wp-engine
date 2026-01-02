@@ -3,15 +3,16 @@ use crate::language::{
     HtmlEscape, HtmlUnescape, JsonEscape, JsonUnescape, StrEscape, ToJson, ToStr,
 };
 
+use arcstr::ArcStr;
 use wp_data_fmt::{DataFormat, Json};
-use wp_model_core::model::{DataField, DataType, Value};
+use wp_model_core::model::{DataField, DataType, FNameStr, Value};
 
 impl ValueProcessor for StrEscape {
     fn value_cacu(&self, in_val: DataField) -> DataField {
         match in_val.get_value() {
             Value::Chars(x) => {
-                let html = x.chars().flat_map(|c| c.escape_default()).collect();
-                DataField::from_chars(in_val.get_name().to_string(), html)
+                let html: String = x.chars().flat_map(|c| c.escape_default()).collect();
+                DataField::from_chars(FNameStr::from(in_val.get_name()), ArcStr::from(html))
             }
             _ => in_val,
         }

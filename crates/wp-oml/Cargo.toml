@@ -8,6 +8,7 @@ license.workspace = true
 
 [dependencies]
 
+arcstr = { workspace = true }
 winnow = { workspace = true }
 orion-error = { workspace = true }
 orion_conf= { workspace = true }
@@ -57,7 +58,6 @@ criterion = { workspace = true }
 env_logger = { workspace = true }
 mockall = { workspace = true }
 
-## removed: oml_bench (privacy-related)
 
 [[bench]]
 name = "oml_sql_bench"

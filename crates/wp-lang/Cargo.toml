@@ -78,6 +78,10 @@ harness = false
 name = "string_comparison"
 harness = false
 
+[[bench]]
+name = "wpl_bench"
+harness = false
+
 [lib]
 name = "wpl"
 # Enable the default Rust test harness so `cargo test --workspace` works.

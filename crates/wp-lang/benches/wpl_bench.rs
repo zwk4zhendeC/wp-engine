@@ -68,7 +68,8 @@ fn criterion_json_deep(c: &mut Criterion) {
     let data = build_deep_json(8, 64);
     let express = wpl_express.parse(wpl).assert();
     let lpp = WplEvaluator::from(&express, None).assert();
-    c.bench_function("json_deep_paths", |b| b.iter(|| wpl_parse(&lpp, &data)));
+    let raw = RawData::from_string(data);
+    c.bench_function("json_deep_paths", |b| b.iter(|| wpl_parse(&lpp, &raw)));
 }
 
 fn criterion_json_array(c: &mut Criterion) {
@@ -77,7 +78,8 @@ fn criterion_json_array(c: &mut Criterion) {
     let data = build_array_json(128, 64);
     let express = wpl_express.parse(wpl).assert();
     let lpp = WplEvaluator::from(&express, None).assert();
-    c.bench_function("json_large_array", |b| b.iter(|| wpl_parse(&lpp, &data)));
+    let raw = RawData::from_string(data);
+    c.bench_function("json_large_array", |b| b.iter(|| wpl_parse(&lpp, &raw)));
 }
 
 fn build_flat_json(n: usize) -> String {
@@ -111,7 +113,8 @@ fn criterion_json_flat_no_subs(c: &mut Criterion) {
     let data = build_flat_json(64);
     let express = wpl_express.parse(wpl).assert();
     let lpp = WplEvaluator::from(&express, None).assert();
-    c.bench_function("json_flat_no_subs", |b| b.iter(|| wpl_parse(&lpp, &data)));
+    let raw = RawData::from_string(data);
+    c.bench_function("json_flat_no_subs", |b| b.iter(|| wpl_parse(&lpp, &raw)));
 }
 
 fn criterion_json_flat_with_subs(c: &mut Criterion) {
@@ -121,7 +124,8 @@ fn criterion_json_flat_with_subs(c: &mut Criterion) {
     let data = build_flat_json(64);
     let express = wpl_express.parse(&wpl).assert();
     let lpp = WplEvaluator::from(&express, None).assert();
-    c.bench_function("json_flat_with_subs", |b| b.iter(|| wpl_parse(&lpp, &data)));
+    let raw = RawData::from_string(data);
+    c.bench_function("json_flat_with_subs", |b| b.iter(|| wpl_parse(&lpp, &raw)));
 }
 
 fn build_escaped_text(lines: usize) -> String {
@@ -140,7 +144,8 @@ fn criterion_json_decoded_pipe(c: &mut Criterion) {
     let data = build_escaped_text(64);
     let express = wpl_express.parse(wpl).assert();
     let lpp = WplEvaluator::from(&express, None).assert();
-    c.bench_function("json_decoded_pipe", |b| b.iter(|| wpl_parse(&lpp, &data)));
+    let raw = RawData::from_string(data);
+    c.bench_function("json_decoded_pipe", |b| b.iter(|| wpl_parse(&lpp, &raw)));
 }
 
 fn build_kv_bulk(n: usize) -> String {
@@ -173,7 +178,8 @@ fn criterion_kv_bulk(c: &mut Criterion) {
     let data = build_kv_bulk(32);
     let express = wpl_express.parse(&wpl).assert();
     let lpp = WplEvaluator::from(&express, None).assert();
-    c.bench_function("kv_bulk", |b| b.iter(|| wpl_parse(&lpp, &data)));
+    let raw = RawData::from_string(data);
+    c.bench_function("kv_bulk", |b| b.iter(|| wpl_parse(&lpp, &raw)));
 }
 
 fn build_proto_deep(levels: usize) -> String {
@@ -200,7 +206,8 @@ fn criterion_proto_text_deep(c: &mut Criterion) {
     let data = build_proto_deep(16);
     let express = wpl_express.parse(wpl).assert();
     let lpp = WplEvaluator::from(&express, None).assert();
-    c.bench_function("proto_text_deep", |b| b.iter(|| wpl_parse(&lpp, &data)));
+    let raw = RawData::from_string(data);
+    c.bench_function("proto_text_deep", |b| b.iter(|| wpl_parse(&lpp, &raw)));
 }
 
 fn criterion_proto_text_wide(c: &mut Criterion) {
@@ -208,7 +215,8 @@ fn criterion_proto_text_wide(c: &mut Criterion) {
     let data = build_proto_wide(128);
     let express = wpl_express.parse(wpl).assert();
     let lpp = WplEvaluator::from(&express, None).assert();
-    c.bench_function("proto_text_wide", |b| b.iter(|| wpl_parse(&lpp, &data)));
+    let raw = RawData::from_string(data);
+    c.bench_function("proto_text_wide", |b| b.iter(|| wpl_parse(&lpp, &raw)));
 }
 
 criterion_group!(

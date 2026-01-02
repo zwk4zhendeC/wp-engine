@@ -1,6 +1,4 @@
-use wp_model_core::model::FNameStr;
 use super::common::parse_fixed;
-use arcstr::ArcStr;
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::PatternParser;
 use crate::eval::value::parser::physical::time::gen_time;
@@ -13,6 +11,7 @@ use winnow::combinator::{alt, dispatch, fail, opt, peek, preceded};
 use winnow::error::StrContext;
 use winnow::stream::Stream as _;
 use winnow::token::literal;
+use wp_model_core::model::FNameStr;
 use wp_model_core::model::{DataField, DateTimeValue};
 use wp_parser::WResult;
 use wp_parser::symbol::ctx_desc;
