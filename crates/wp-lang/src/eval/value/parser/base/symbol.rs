@@ -1,3 +1,4 @@
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use arcstr::ArcStr;
 use std::collections::HashMap;
@@ -24,7 +25,7 @@ impl PatternParser for SymbolP {
         fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         multispace0.parse_next(data)?;
@@ -77,7 +78,7 @@ impl PatternParser for PeekSymbolP {
         fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let data_1: &str = data;

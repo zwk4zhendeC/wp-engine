@@ -1,4 +1,4 @@
-use arcstr::ArcStr;
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::ast::group::WplGroupType;
 use crate::generator::{FieldGenConf, GenScopeEnum};
@@ -33,7 +33,7 @@ impl PatternParser for DigitP {
         fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         match fpu.group_enum() {
@@ -83,7 +83,7 @@ impl PatternParser for FloatP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let obj = Self::parse_value.parse_next(data)?;

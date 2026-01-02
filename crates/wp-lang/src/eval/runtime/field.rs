@@ -9,7 +9,7 @@ use crate::generator::FieldGenConf;
 use crate::generator::{FmtField, GenChannel};
 use crate::parser::error::WplCodeResult;
 use crate::types::AnyResult;
-use arcstr::ArcStr;
+use wp_model_core::model::FNameStr;
 use derive_getters::Getters;
 // Use centralized parser result alias for consistency across crates
 use wp_model_core::model::{DataField, DataType};
@@ -120,7 +120,7 @@ impl FieldEvalUnit {
         &self,
         upper_sep: &WplSep,
         data: &mut &str,
-        run_key: Option<ArcStr>,
+        run_key: Option<FNameStr>,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let sep = self.conf.resolve_sep_ref(upper_sep);

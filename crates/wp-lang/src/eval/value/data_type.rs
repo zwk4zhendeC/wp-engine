@@ -4,16 +4,17 @@ use std::str::FromStr;
 
 use crate::eval::value::parser::physical::time::parse_time;
 use arcstr::ArcStr;
+use wp_model_core::model::FNameStr;
 use wp_model_core::model::DataType;
 use wp_model_core::model::data::Field;
 use wp_model_core::model::error::ModelError;
 use wp_model_core::model::{DateTimeValue, Maker, Value};
 
 pub trait DataTypeParser {
-    fn from_str<S: Into<ArcStr> + Display>(
+    fn from_str<N: Into<FNameStr>, V: Into<ArcStr> + Display>(
         meta: DataType,
-        name: S,
-        value: S,
+        name: N,
+        value: V,
     ) -> Result<Self, ModelError>
     where
         Self: Sized;
@@ -29,10 +30,10 @@ where
     T: Maker<DateTimeValue>,
     T: Maker<Value>,
 {
-    fn from_str<S: Into<ArcStr> + Display>(
+    fn from_str<N: Into<FNameStr>, V: Into<ArcStr> + Display>(
         meta: DataType,
-        name: S,
-        value: S,
+        name: N,
+        value: V,
     ) -> Result<Self, ModelError> {
         match meta {
             DataType::Chars => Ok(Field::<T>::from_chars(name.into(), value.into())),

@@ -1,3 +1,4 @@
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::ast::WplSep;
 use crate::generator::FmtField;
@@ -19,7 +20,7 @@ impl FieldParser for Base64P {
         fpu: &FieldEvalUnit,
         ups_sep: &WplSep,
         data: &mut &str,
-        f_name: Option<ArcStr>,
+        f_name: Option<FNameStr>,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let sep = fpu.conf().resolve_sep(ups_sep);

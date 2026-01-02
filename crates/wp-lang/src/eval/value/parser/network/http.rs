@@ -1,3 +1,4 @@
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 
 use crate::derive_base_prs;
@@ -24,7 +25,7 @@ impl PatternParser for MethodP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         multispace0.parse_next(data)?;
@@ -47,7 +48,8 @@ impl PatternParser for MethodP {
         f_conf: &WplField,
         _g_conf: Option<&FieldGenConf>,
     ) -> AnyResult<DataField> {
-        Ok(DataField::from_chars(f_conf.safe_name(), "GET".into()))
+        use arcstr::ArcStr;
+        Ok(DataField::from_chars(f_conf.safe_name(), ArcStr::from("GET")))
     }
 }
 
@@ -57,7 +59,7 @@ impl PatternParser for RequestP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         // 方法扫描 + 校验
@@ -106,8 +108,9 @@ impl PatternParser for RequestP {
         f_conf: &WplField,
         _g_conf: Option<&FieldGenConf>,
     ) -> AnyResult<DataField> {
+        use arcstr::ArcStr;
         let data = "GET /index  HTTP/1.1 ";
-        Ok(DataField::from_chars(f_conf.safe_name(), data.into()))
+        Ok(DataField::from_chars(f_conf.safe_name(), ArcStr::from(data)))
     }
 }
 
@@ -117,7 +120,7 @@ impl PatternParser for StatusP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let status = delimited(multispace0, digit1.try_map(str::parse::<u32>), multispace0)
@@ -168,7 +171,7 @@ impl PatternParser for AgentP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let mozilla = preceded(multispace0, literal("Mozilla/")).parse_next(data)?;
@@ -196,8 +199,9 @@ impl PatternParser for AgentP {
         f_conf: &WplField,
         _g_conf: Option<&FieldGenConf>,
     ) -> AnyResult<DataField> {
+        use arcstr::ArcStr;
         let agent = r#"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"#;
-        Ok(DataField::from_chars(f_conf.safe_name(), agent.into()))
+        Ok(DataField::from_chars(f_conf.safe_name(), ArcStr::from(agent)))
     }
 }
 

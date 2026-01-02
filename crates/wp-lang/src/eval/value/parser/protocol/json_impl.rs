@@ -1,3 +1,4 @@
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::ast::WplSep;
 use crate::eval::runtime::field::FieldEvalUnit;
@@ -184,7 +185,7 @@ impl JsonProc {
         let run_key = if let Some(sub_conf) = sub_conf_opt {
             sub_conf.run_key_str(j_path.as_str())
         } else {
-            ArcStr::from(j_path.clone())
+            FNameStr::from(j_path.clone())
         };
         match v {
             Value::Null => {
@@ -262,14 +263,14 @@ impl JsonProc {
                     fpu.parse(&ups_sep, &mut raw_ref, Some(run_key), out)?;
                     return Ok(());
                 }
-                out.push(DataField::from_chars(run_key, raw.into()));
+                out.push(DataField::from_chars(run_key, raw));
                 return Ok(());
             }
             Value::Array(arr) => {
                 if exact {
                     Self::exact_check(fpu, true, sub_conf_opt.is_some(), j_path.as_str())?;
                 }
-                let mut arr_name = ArcStr::from(name);
+                let mut arr_name = FNameStr::from(name);
                 if let Some(cnf) = sub_conf_opt {
                     arr_name = cnf.name.clone().unwrap_or(arr_name);
                     if let DataType::Array(_) = *cnf.meta_type() {

@@ -6,7 +6,7 @@ use crate::generator::FieldGenConf;
 use crate::generator::{FmtField, GenChannel};
 use crate::types::AnyResult;
 use crate::winnow::Parser;
-use arcstr::ArcStr;
+use wp_model_core::model::FNameStr;
 use wp_model_core::model::{DataField, DataType};
 
 use winnow::ascii::multispace0;
@@ -25,14 +25,14 @@ where
         fpu: &FieldEvalUnit,
         ups_sep: &WplSep,
         data: &mut &str,
-        f_name: Option<ArcStr>,
+        f_name: Option<FNameStr>,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let mut name = Some(
             if *fpu.conf().meta_type() == DataType::Json
                 || *fpu.conf().meta_type() == DataType::ExactJson
             {
-                f_name.unwrap_or_else(|| ArcStr::default())
+                f_name.unwrap_or_else(|| FNameStr::default())
             } else {
                 f_name.unwrap_or_else(|| fpu.conf().safe_name())
             },

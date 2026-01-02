@@ -1,4 +1,4 @@
-use arcstr::ArcStr;
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::generator::ParserValue;
@@ -29,7 +29,7 @@ impl PatternParser for ArrayP {
         fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let mut tdo_arr: Vec<DataField> = Vec::with_capacity(10);

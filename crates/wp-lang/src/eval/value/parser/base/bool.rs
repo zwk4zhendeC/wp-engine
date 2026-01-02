@@ -1,4 +1,4 @@
-use arcstr::ArcStr;
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::generator::FieldGenConf;
 use crate::generator::{GenChannel, ParserValue};
@@ -32,7 +32,7 @@ impl PatternParser for BoolP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         multispace0.parse_next(data)?;

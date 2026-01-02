@@ -1,4 +1,4 @@
-use arcstr::ArcStr;
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::generator::FieldGenConf;
 use crate::generator::GenChannel;
@@ -21,7 +21,7 @@ impl PatternParser for IgnoreP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         //let _buffer = alt((quot_str, window_path, take_to_end))

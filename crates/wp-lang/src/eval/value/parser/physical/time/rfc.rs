@@ -1,3 +1,4 @@
+use wp_model_core::model::FNameStr;
 use super::common::parse_fixed;
 use arcstr::ArcStr;
 use crate::eval::runtime::field::FieldEvalUnit;
@@ -166,7 +167,7 @@ impl PatternParser for TimeP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &crate::ast::WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> WResult<()> {
         let time = alt((
@@ -196,7 +197,7 @@ impl PatternParser for TimeISOP {
         _fpu: &FieldEvalUnit,
         _: &crate::ast::WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> WResult<()> {
         let time = parse_rfc3339.parse_next(data)?;
@@ -218,7 +219,7 @@ impl PatternParser for TimeRFC3339 {
         fpu: &FieldEvalUnit,
         s: &crate::ast::WplSep,
         d: &mut &str,
-        n: ArcStr,
+        n: FNameStr,
         o: &mut Vec<DataField>,
     ) -> WResult<()> {
         TimeISOP {}.pattern_parse(fpu, s, d, n, o)
@@ -238,7 +239,7 @@ impl PatternParser for TimeRFC2822 {
         _: &FieldEvalUnit,
         _: &crate::ast::WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> WResult<()> {
         let time = parse_rfc2822.parse_next(data)?;

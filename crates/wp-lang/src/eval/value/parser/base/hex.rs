@@ -1,4 +1,4 @@
-use arcstr::ArcStr;
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::*;
@@ -35,7 +35,7 @@ impl PatternParser for HexDigitP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let obj = Self::parse_value(data)?;

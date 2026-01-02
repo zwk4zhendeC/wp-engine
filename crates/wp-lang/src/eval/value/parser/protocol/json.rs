@@ -1,7 +1,7 @@
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use std::io::Cursor;
 
-use arcstr::ArcStr;
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::PatternParser;
 use crate::eval::value::parser::protocol::json_impl::JsonProc;
@@ -18,7 +18,7 @@ impl PatternParser for JsonP {
         fpu: &FieldEvalUnit,
         ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         multispace0.parse_next(data)?;

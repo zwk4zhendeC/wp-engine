@@ -1,3 +1,4 @@
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use std::collections::HashMap;
 
@@ -8,7 +9,6 @@ use crate::generator::{FieldGenConf, GenScopeEnum};
 use crate::generator::{GenChannel, ParserValue};
 use crate::parser::utils::{quot_r_str, quot_str, take_to_end, window_path};
 use crate::types::AnyResult;
-use arcstr::ArcStr;
 use rand::Rng;
 use winnow::ascii::{digit1, multispace0};
 use winnow::combinator::{alt, preceded};
@@ -32,7 +32,7 @@ impl PatternParser for CharsP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         multispace0.parse_next(data)?;

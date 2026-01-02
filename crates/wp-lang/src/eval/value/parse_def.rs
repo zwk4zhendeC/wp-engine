@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use arcstr::ArcStr;
+use wp_model_core::model::FNameStr;
 use crate::generator::FieldGenConf;
 use crate::generator::{FmtField, GenChannel};
 use crate::types::AnyResult;
@@ -16,7 +16,7 @@ pub trait FieldParser {
         fpu: &FieldEvalUnit,
         ups_sep: &WplSep,
         data: &mut &str,
-        f_name: Option<ArcStr>,
+        f_name: Option<FNameStr>,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()>;
 
@@ -35,7 +35,7 @@ pub trait PatternParser {
         fpu: &FieldEvalUnit,
         ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()>;
 

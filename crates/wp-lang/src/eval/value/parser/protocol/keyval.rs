@@ -1,4 +1,4 @@
-use arcstr::ArcStr;
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::ast::group::WplGroupType;
 use crate::derive_base_prs;
@@ -19,7 +19,7 @@ impl PatternParser for KeyValP {
         fpu: &FieldEvalUnit,
         ups_sep: &WplSep,
         data: &mut &str,
-        _name: ArcStr,
+        _name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let _ = multispace0.parse_next(data)?;
@@ -137,7 +137,7 @@ mod tests {
         let field = ParserTUnit::from_auto(conf).verify_parse_suc_meta(&mut data, DataType::Chars);
         assert_eq!(
             field[0],
-            DataField::from_chars("destination-zone".to_string(), r#"tr\"ust"#.into())
+            DataField::from_chars("destination-zone".to_string(), arcstr::ArcStr::from(r#"tr\"ust"#))
         );
 
         let mut data = r#"time="2023-05-15 09:22:44" "#;

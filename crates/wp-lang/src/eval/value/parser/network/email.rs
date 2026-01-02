@@ -1,4 +1,4 @@
-use arcstr::ArcStr;
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::derive_base_prs;
 use crate::eval::runtime::field::FieldEvalUnit;
@@ -16,7 +16,7 @@ impl PatternParser for EmailP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let start = data.checkpoint();

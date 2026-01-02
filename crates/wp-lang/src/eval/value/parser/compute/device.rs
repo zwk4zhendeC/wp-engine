@@ -1,3 +1,4 @@
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use std::fmt::Write;
 
@@ -25,7 +26,7 @@ impl PatternParser for SnP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let sn = take_while(1.., (AsChar::is_alpha, AsChar::is_dec_digit, '-')).parse_next(data)?;

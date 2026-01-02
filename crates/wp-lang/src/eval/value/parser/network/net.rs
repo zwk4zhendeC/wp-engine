@@ -1,3 +1,4 @@
+use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use arcstr::ArcStr;
 use std::collections::HashMap;
@@ -28,7 +29,7 @@ impl PatternParser for IpPSR {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let ip = IpPSR::parse_value(data)?;
@@ -84,7 +85,7 @@ impl PatternParser for IpNetP {
         _fpu: &FieldEvalUnit,
         _ups_sep: &WplSep,
         data: &mut &str,
-        name: ArcStr,
+        name: FNameStr,
         out: &mut Vec<DataField>,
     ) -> ModalResult<()> {
         let ipnet = IpNetP::parse_value(data)?;

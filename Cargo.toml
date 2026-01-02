@@ -374,17 +374,17 @@ wp_stats = { package = "wp-stats", path = "./crates/wp-stats" }
 
 
 # --- External: Open API (Public Interfaces) ---
-wp_connector_api = { package = "wp-connector-api", git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7" }
-wp_parse_api     = { package = "wp-parse-api",     git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7" }
-wp_model_core    = { package = "wp-model-core",    git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7" }
+wp_connector_api = { package = "wp-connector-api", git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7-smol" }
+wp_parse_api     = { package = "wp-parse-api",     git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7-smol" }
+wp_model_core    = { package = "wp-model-core",    git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7-smol" }
 
 # --- External: Advanced API (Enterprise Features) ---
 wp_ctrl_api   = { package = "wp-ctrl-api",   git = "https://github.com/wp-labs/wp-advanced-api", tag = "v0.0.4-alpha" }
 wp_enrich_api = { package = "wp-enrich-api", git = "https://github.com/wp-labs/wp-advanced-api", tag = "v0.0.4-alpha" }
 
 # --- External: Infrastructure Libraries ---
-wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7" }
-wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7" }
-wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7" }
-wp_conf_base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7" }
-wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7" }
+wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
+wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
+wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
+wp_conf_base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
+wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
