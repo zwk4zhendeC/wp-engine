@@ -1,6 +1,7 @@
 use super::wpl_fun;
 use crate::ast::WplSep;
 use crate::ast::fld_fmt::WplFieldFmt;
+use crate::ast::field::name_cache;
 use crate::ast::{DEFAULT_FIELD_KEY, WplField, WplFieldSet, WplPipe};
 use crate::parser::datatype::take_datatype;
 use crate::parser::utils::{
@@ -176,7 +177,7 @@ fn wpl_id_field<'a>(input: &mut &'a str) -> ModalResult<(&'a str, WplField)> {
 
     let mut conf = WplField {
         name: f_key.map(|s| s.into()),
-        meta_name: meta_type.static_name().into(),
+        meta_name: name_cache::get_cached_name(meta_type.static_name()),
         meta_type,
         fmt_conf,
         separator: sep,

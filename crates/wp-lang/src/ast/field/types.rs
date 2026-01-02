@@ -2,6 +2,7 @@ use crate::ast::WplPipe;
 use crate::ast::debug::DebugFormat;
 use crate::ast::fld_fmt::WplFieldFmt;
 use crate::ast::syntax::wpl_sep::WplSep;
+use crate::ast::field::name_cache;
 use crate::parser::wpl_field::wpl_field;
 use crate::types::WildMap;
 use arcstr::ArcStr;
@@ -99,7 +100,7 @@ impl Default for WplField {
     fn default() -> Self {
         WplField {
             meta_type: DataType::Auto,
-            meta_name: DEFAULT_META_NAME.into(),
+            meta_name: name_cache::get_cached_name(DEFAULT_META_NAME),
             fmt_conf: WplFieldFmt::default(),
             name: None,
             content: None,
@@ -132,7 +133,7 @@ impl WplField {
     pub fn new(meta: &str) -> Result<Self, MetaErr> {
         let ins = WplField {
             meta_type: DataType::from(meta)?,
-            meta_name: meta.into(),
+            meta_name: name_cache::get_or_create_name(meta),
             ..Default::default()
         };
         ins.validate();
@@ -142,7 +143,7 @@ impl WplField {
     pub fn sub_for_arr(meta: &str) -> Result<Self, MetaErr> {
         let ins = WplField {
             meta_type: DataType::from(meta)?,
-            meta_name: meta.into(),
+            meta_name: name_cache::get_or_create_name(meta),
             fmt_conf: WplFieldFmt::default(),
             take_sep: false,
             ..Default::default()

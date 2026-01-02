@@ -9,6 +9,7 @@ license.workspace = true
 
 [dependencies]
 arcstr = { workspace = true }
+smol_str = "0.2"
 derive_more = { workspace = true }
 ordered-float = { workspace = true }                       # 可哈希浮点
 orion_overload = { path = "../orion_overload" }
@@ -71,6 +72,10 @@ harness = false
 
 [[bench]]
 name = "nginx_10k"
+harness = false
+
+[[bench]]
+name = "string_comparison"
 harness = false
 
 [lib]
