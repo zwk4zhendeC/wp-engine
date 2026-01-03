@@ -1,9 +1,9 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::generator::FieldGenConf;
 use crate::generator::GenChannel;
 use crate::types::AnyResult;
 use wp_model_core::model::DataField;
+use wp_model_core::model::FNameStr;
 use wp_parser::Parser;
 use wp_parser::WResult as ModalResult;
 use wp_parser::symbol::ctx_desc;

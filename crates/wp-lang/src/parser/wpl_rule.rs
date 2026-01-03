@@ -21,7 +21,8 @@ fn take_plg_pipe_step(input: &mut &str) -> wp_parser::WResult<SmolStr> {
         literal("plg_pipe"),
         multispace0,
         alt((
-            (literal('/'), multispace0, utils::take_key).map(|x| SmolStr::from(format!("plg_pipe/{}", x.2))),
+            (literal('/'), multispace0, utils::take_key)
+                .map(|x| SmolStr::from(format!("plg_pipe/{}", x.2))),
             (
                 literal('('),
                 multispace0,
@@ -46,7 +47,7 @@ pub fn pip_proc(input: &mut &str) -> wp_parser::WResult<Vec<SmolStr>> {
                 take_plg_pipe_step.context(StrContext::Label("expect plg_pipe/<name>")),
                 utils::take_key
                     .context(StrContext::Label("expect [a-z],[A-Z],[/],[_]"))
-                    .map(|s| SmolStr::from(s)),
+                    .map(SmolStr::from),
             )),
             multispace0,
         )

@@ -1,4 +1,3 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::derive_base_prs;
 use crate::eval::runtime::field::FieldEvalUnit;
@@ -7,6 +6,7 @@ use crate::generator::GenChannel;
 use rand::prelude::IndexedRandom;
 use rand::rng;
 use winnow::token::take_while;
+use wp_model_core::model::FNameStr;
 
 derive_base_prs!(EmailP);
 

@@ -1,4 +1,3 @@
-use wp_model_core::model::FNameStr;
 use super::common::fast_apache_dt;
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::PatternParser;
@@ -6,6 +5,7 @@ use crate::generator::{FieldGenConf, GenChannel};
 use crate::types::AnyResult;
 use winnow::stream::Stream as _;
 use wp_model_core::model::DataField;
+use wp_model_core::model::FNameStr;
 
 #[derive(Default)]
 pub struct TimeCLF {}

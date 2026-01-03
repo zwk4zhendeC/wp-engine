@@ -1,6 +1,6 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use std::collections::HashMap;
+use wp_model_core::model::FNameStr;
 
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::PatternParser;
@@ -51,7 +51,11 @@ impl PatternParser for SymbolP {
         //let _ = self.base().field_conf.length;
 
         // 优化: 避免不必要的 double clone
-        let dat = f_conf.content.as_ref().map(|s| s.to_string()).unwrap_or_default();
+        let dat = f_conf
+            .content
+            .as_ref()
+            .map(|s| s.to_string())
+            .unwrap_or_default();
 
         if let Some(conf) = g_conf
             && let Some(fmt) = &conf.gen_fmt

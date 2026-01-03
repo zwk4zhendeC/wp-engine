@@ -1,7 +1,7 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::generator::ParserValue;
+use wp_model_core::model::FNameStr;
 
 use winnow::ascii::{digit1, multispace0};
 use winnow::combinator::{fail, preceded, separated};

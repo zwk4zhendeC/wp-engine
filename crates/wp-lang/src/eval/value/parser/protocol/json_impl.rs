@@ -1,8 +1,8 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::ast::WplSep;
 use crate::eval::runtime::field::FieldEvalUnit;
 use smol_str::SmolStr;
+use wp_model_core::model::FNameStr;
 // 使用 String 动态拼接路径，避免固定容量 ArrayString 在深层或长 key 时 panic
 use serde_json::{Map, Value};
 use wp_model_core::model::types::value::ObjectValue;

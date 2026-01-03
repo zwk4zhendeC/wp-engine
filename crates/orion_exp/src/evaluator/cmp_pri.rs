@@ -1,9 +1,9 @@
 use std::net::IpAddr;
 
 use arcstr::ArcStr;
-use smol_str::SmolStr;
 use chrono::NaiveDateTime;
 use ipnet::IpNet;
+use smol_str::SmolStr;
 
 use crate::WildcardMatcher;
 #[cfg(feature = "we_precompile")]

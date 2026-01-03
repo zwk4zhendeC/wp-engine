@@ -1,4 +1,3 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::derive_base_prs;
 use crate::eval::runtime::field::FieldEvalUnit;
@@ -9,6 +8,7 @@ use rand::rng;
 use winnow::ascii::alpha1;
 use winnow::combinator::repeat;
 use winnow::token::{literal, take_until, take_while};
+use wp_model_core::model::FNameStr;
 use wp_model_core::model::{DataField, DataType};
 
 // domain格式

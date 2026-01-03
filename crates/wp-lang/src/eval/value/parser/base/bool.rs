@@ -1,4 +1,3 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::generator::FieldGenConf;
 use crate::generator::{GenChannel, ParserValue};
@@ -6,6 +5,7 @@ use crate::parser::utils::{quot_r_str, quot_str, take_to_end, window_path};
 use crate::types::AnyResult;
 use wp_model_core::model::DataField;
 use wp_model_core::model::DataType;
+use wp_model_core::model::FNameStr;
 use wp_model_core::model::{DigitValue, Value};
 
 use winnow::ascii::{dec_int, multispace0};

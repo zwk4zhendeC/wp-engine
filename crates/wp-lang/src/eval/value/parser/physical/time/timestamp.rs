@@ -1,4 +1,3 @@
-use wp_model_core::model::FNameStr;
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::PatternParser;
 use crate::generator::{FieldGenConf, GenChannel};
@@ -8,6 +7,7 @@ use winnow::combinator::alt;
 use winnow::stream::Stream as _;
 use winnow::token::take;
 use wp_model_core::model::DataField;
+use wp_model_core::model::FNameStr;
 use wp_parser::WResult;
 
 #[derive(Default)]

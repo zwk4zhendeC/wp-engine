@@ -1,7 +1,7 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use winnow::combinator::delimited;
 use winnow::token::{literal, take};
+use wp_model_core::model::FNameStr;
 
 use crate::derive_base_prs;
 use crate::eval::runtime::field::FieldEvalUnit;

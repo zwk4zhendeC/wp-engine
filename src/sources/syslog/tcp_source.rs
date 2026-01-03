@@ -299,12 +299,7 @@ impl TcpSyslogSource {
         let stags = self.base_source_tags();
         //stags.set("access_ip".to_string(), access_ip.clone());
 
-        let mut event = SourceEvent::new(
-            next_event_id(),
-            &self.key,
-            payload,
-            Arc::new(stags),
-        );
+        let mut event = SourceEvent::new(next_event_id(), &self.key, payload, Arc::new(stags));
         event.ups_ip = Some(client_ip);
         if self.strip_header || self.attach_meta_tags {
             event.preproc = self.preproc_hook.clone();

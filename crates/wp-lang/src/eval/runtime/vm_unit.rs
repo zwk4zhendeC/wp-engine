@@ -274,7 +274,6 @@ impl StopWatch {
 
 #[cfg(test)]
 mod tests {
-    use smol_str::SmolStr;
     use crate::ast::fld_fmt::for_test::{fdc2, fdc2_1, fdc3, fdc4_1};
     use crate::ast::{WplField, WplFieldFmt};
     use crate::eval::builtins::raw_to_utf8_string;
@@ -284,6 +283,7 @@ mod tests {
     use crate::{WparseResult, WplExpress, register_wpl_pipe};
     use orion_error::TestAssert;
     use orion_overload::new::New1;
+    use smol_str::SmolStr;
     use wp_parse_api::{PipeProcessor, RawData};
 
     #[test]

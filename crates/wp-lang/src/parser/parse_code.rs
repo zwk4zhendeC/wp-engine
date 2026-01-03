@@ -249,11 +249,17 @@ mod tests {
         );
         assert_eq!(
             pip_proc.parse_peek("|decode/base64|zip|"),
-            Ok(("", vec![SmolStr::from("decode/base64"), SmolStr::from("zip")]))
+            Ok((
+                "",
+                vec![SmolStr::from("decode/base64"), SmolStr::from("zip")]
+            ))
         );
         assert_eq!(
             pip_proc.parse_peek("|decode/base64|zip |"),
-            Ok(("", vec![SmolStr::from("decode/base64"), SmolStr::from("zip")]))
+            Ok((
+                "",
+                vec![SmolStr::from("decode/base64"), SmolStr::from("zip")]
+            ))
         );
         assert_eq!(
             pip_proc.parse_peek("|   base64  |zip |"),

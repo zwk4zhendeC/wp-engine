@@ -1,3 +1,4 @@
+use smol_str::SmolStr;
 use winnow::ascii::{multispace0, take_escaped};
 use winnow::combinator::{alt, delimited, fail, opt, peek, preceded, separated_pair};
 use winnow::error::{ContextError, ErrMode};
@@ -6,7 +7,6 @@ use winnow::token::{literal, none_of, one_of, take, take_until, take_while};
 use wp_model_core::model::Value;
 use wp_parser::Parser;
 use wp_parser::WResult;
-use smol_str::SmolStr;
 
 use wp_parser::symbol::ctx_desc;
 

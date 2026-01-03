@@ -32,7 +32,7 @@ where
             if *fpu.conf().meta_type() == DataType::Json
                 || *fpu.conf().meta_type() == DataType::ExactJson
             {
-                f_name.unwrap_or_else(|| FNameStr::default())
+                f_name.unwrap_or_default()
             } else {
                 f_name.unwrap_or_else(|| fpu.conf().safe_name())
             },

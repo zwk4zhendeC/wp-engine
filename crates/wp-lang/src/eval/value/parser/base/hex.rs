@@ -1,4 +1,3 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::*;
@@ -9,6 +8,7 @@ use rand::Rng;
 use winnow::ascii::multispace0;
 use winnow::ascii::{Caseless, hex_uint};
 use winnow::combinator::{opt, preceded};
+use wp_model_core::model::FNameStr;
 use wp_model_core::model::{DataField, DataType, HexT};
 use wp_parser::Parser;
 use wp_parser::WResult as ModalResult;

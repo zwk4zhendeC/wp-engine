@@ -1,8 +1,8 @@
-use wp_model_core::model::FNameStr;
 use super::prelude::*;
 use crate::ast::WplSep;
 use crate::generator::FmtField;
 use wp_model_core::model::DataField;
+use wp_model_core::model::FNameStr;
 
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::*;

@@ -83,7 +83,7 @@ libc =  {workspace = true}
 hostname = {workspace = true}
 socket2 =  {workspace = true}
 async-signal = {workspace = true}
-arcstr = {workspace = true}
+smol_str = {workspace = true}
 signal-hook-registry = {workspace = true}
 
 # --- Async Runtime & Concurrency ---
@@ -243,6 +243,7 @@ normal = ["ctor"]
 tokio = { version = "~1.48", features = ["full"] }
 async-trait = "~0.1"
 futures-util = "~0.3"
+smol_str = { version = "~0.3", features = ["serde"] }
 
 # --- Serialization ---
 serde = "~1.0"

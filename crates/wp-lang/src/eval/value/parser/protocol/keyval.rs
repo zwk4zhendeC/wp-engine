@@ -1,4 +1,3 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::ast::group::WplGroupType;
 use crate::derive_base_prs;
@@ -7,6 +6,7 @@ use crate::eval::value::parse_def::PatternParser;
 use crate::eval::value::parser::physical::foundation::gen_chars;
 use crate::eval::value::parser::{ParserFactory, protocol};
 use crate::parser::utils::{quot_r_str, quot_str, take_key, window_path};
+use wp_model_core::model::FNameStr;
 derive_base_prs!(KeyValP);
 
 // kv解析格式目前不支持：kv(digit)，必须要指定解析原始字段名称，这是为了解析同一类型的日志数据时，可以忽略有时候不存在的字段，减少规则书写条数

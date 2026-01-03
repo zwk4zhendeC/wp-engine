@@ -1,6 +1,6 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use std::io::Cursor;
+use wp_model_core::model::FNameStr;
 
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::PatternParser;

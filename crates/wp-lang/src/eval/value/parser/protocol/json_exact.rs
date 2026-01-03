@@ -1,4 +1,3 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::PatternParser;
@@ -6,6 +5,7 @@ use crate::eval::value::parser::protocol::json_impl::JsonProc;
 use serde::Deserialize;
 use serde_json::{Deserializer, Value};
 use std::io::Cursor;
+use wp_model_core::model::FNameStr;
 
 #[derive(Default)]
 pub struct ExactJsonP {}

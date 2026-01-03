@@ -1,6 +1,6 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use std::fmt::Write;
+use wp_model_core::model::FNameStr;
 
 use winnow::stream::AsChar;
 use winnow::token::take_while;

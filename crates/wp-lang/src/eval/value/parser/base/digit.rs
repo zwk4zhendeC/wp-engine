@@ -1,4 +1,3 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::ast::group::WplGroupType;
 use crate::generator::{FieldGenConf, GenScopeEnum};
@@ -9,6 +8,7 @@ use winnow::ascii::{dec_int, float, multispace0};
 use winnow::combinator::preceded;
 use wp_model_core::model::DataField;
 use wp_model_core::model::DataType;
+use wp_model_core::model::FNameStr;
 use wp_model_core::model::{DigitValue, FloatValue};
 use wp_parser::Parser;
 use wp_parser::WResult as ModalResult;

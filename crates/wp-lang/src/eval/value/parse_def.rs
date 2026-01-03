@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use wp_model_core::model::FNameStr;
 use crate::generator::FieldGenConf;
 use crate::generator::{FmtField, GenChannel};
 use crate::types::AnyResult;
 use wp_model_core::model::DataField;
+use wp_model_core::model::FNameStr;
 use wp_parser::WResult as ModalResult;
 
 use crate::ast::{WplField, WplSep};

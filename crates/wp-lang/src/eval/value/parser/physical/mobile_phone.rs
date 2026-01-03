@@ -1,9 +1,9 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::derive_base_prs;
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::PatternParser;
 use winnow::ascii::digit1;
+use wp_model_core::model::FNameStr;
 
 derive_base_prs!(MobilePhoneP);
 

@@ -1,5 +1,5 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
+use wp_model_core::model::FNameStr;
 
 use crate::derive_base_prs;
 use crate::eval::runtime::field::FieldEvalUnit;
@@ -49,7 +49,10 @@ impl PatternParser for MethodP {
         _g_conf: Option<&FieldGenConf>,
     ) -> AnyResult<DataField> {
         use smol_str::SmolStr;
-        Ok(DataField::from_chars(f_conf.safe_name(), SmolStr::from("GET")))
+        Ok(DataField::from_chars(
+            f_conf.safe_name(),
+            SmolStr::from("GET"),
+        ))
     }
 }
 
@@ -110,7 +113,10 @@ impl PatternParser for RequestP {
     ) -> AnyResult<DataField> {
         use smol_str::SmolStr;
         let data = "GET /index  HTTP/1.1 ";
-        Ok(DataField::from_chars(f_conf.safe_name(), SmolStr::from(data)))
+        Ok(DataField::from_chars(
+            f_conf.safe_name(),
+            SmolStr::from(data),
+        ))
     }
 }
 
@@ -201,7 +207,10 @@ impl PatternParser for AgentP {
     ) -> AnyResult<DataField> {
         use smol_str::SmolStr;
         let agent = r#"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"#;
-        Ok(DataField::from_chars(f_conf.safe_name(), SmolStr::from(agent)))
+        Ok(DataField::from_chars(
+            f_conf.safe_name(),
+            SmolStr::from(agent),
+        ))
     }
 }
 

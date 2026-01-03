@@ -28,7 +28,10 @@ impl WplRuleMeta {
     fn export_tags(tags: &mut Vec<WplTag>, x: &Option<AnnFun>) {
         if let Some(tag_obj) = x {
             for (k, v) in &tag_obj.tags {
-                tags.push(WplTag::new(SmolStr::from(k.as_str()), SmolStr::from(v.as_str())))
+                tags.push(WplTag::new(
+                    SmolStr::from(k.as_str()),
+                    SmolStr::from(v.as_str()),
+                ))
             }
         }
     }

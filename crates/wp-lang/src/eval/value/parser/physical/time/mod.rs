@@ -48,5 +48,8 @@ pub fn gen_time(
             }
         }
     }
-    Ok(DataField::from_time(f_conf.safe_name().to_string(), time.naive_local()))
+    Ok(DataField::from_time(
+        f_conf.safe_name().to_string(),
+        time.naive_local(),
+    ))
 }

@@ -28,10 +28,10 @@ fn map_row(row: &rusqlite::Row<'_>, col_names: &[String]) -> KnowledgeResult<Row
             rusqlite::types::ValueRef::Integer(v) => DataField::from_digit(col_name, v),
             rusqlite::types::ValueRef::Real(v) => DataField::from_float(col_name, v),
             rusqlite::types::ValueRef::Text(v) => {
-                DataField::from_chars(col_name, &String::from_utf8(v.to_vec()).owe_rule()?)
+                DataField::from_chars(col_name, String::from_utf8(v.to_vec()).owe_rule()?)
             }
             rusqlite::types::ValueRef::Blob(v) => {
-                DataField::from_chars(col_name, &String::from_utf8_lossy(v).to_string())
+                DataField::from_chars(col_name, String::from_utf8_lossy(v).to_string())
             }
         };
         result.push(field);

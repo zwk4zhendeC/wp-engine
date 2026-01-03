@@ -1,12 +1,12 @@
-use wp_model_core::model::FNameStr;
 use super::super::prelude::*;
 use crate::derive_base_prs;
 use crate::eval::runtime::field::FieldEvalUnit;
 use crate::eval::value::parse_def::PatternParser;
 use crate::generator::FieldGenConf;
-use smol_str::SmolStr;
 use idcard::fake::new;
 use idcard::{Gender, Identity};
+use smol_str::SmolStr;
+use wp_model_core::model::FNameStr;
 use wp_model_core::model::Value;
 
 derive_base_prs!(IdCardP);

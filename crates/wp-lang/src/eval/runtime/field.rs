@@ -9,8 +9,8 @@ use crate::generator::FieldGenConf;
 use crate::generator::{FmtField, GenChannel};
 use crate::parser::error::WplCodeResult;
 use crate::types::AnyResult;
-use wp_model_core::model::FNameStr;
 use derive_getters::Getters;
+use wp_model_core::model::FNameStr;
 // Use centralized parser result alias for consistency across crates
 use wp_model_core::model::{DataField, DataType};
 use wp_parser::WResult as ModalResult;

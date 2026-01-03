@@ -219,10 +219,10 @@ fn parse_nginx_template(line: &str) -> NginxTemplate {
         WplEvaluator::from(&express, None).expect("build nginx evaluator")
     });
 
-    if let Ok((record, _)) = NGX_EVAL.proc(RawData::from_string(line.to_string()), 0) {
-        if let Some(template) = template_from_record(&record) {
-            return template;
-        }
+    if let Ok((record, _)) = NGX_EVAL.proc(RawData::from_string(line.to_string()), 0)
+        && let Some(template) = template_from_record(&record)
+    {
+        return template;
     }
 
     fallback_parse(line)
@@ -271,7 +271,8 @@ fn value_as_digit(record: &DataRecord, key: &str) -> Option<i64> {
 
 fn fallback_parse(line: &str) -> NginxTemplate {
     let parts: Vec<&str> = line.split('"').collect();
-    let head = parts.get(0).copied().unwrap_or("");
+    //let head = parts.get(0).copied().unwrap_or("");
+    let head = parts.first().copied().unwrap_or("");
     let request = parts.get(1).copied().unwrap_or("");
     let status_chunk = parts.get(2).copied().unwrap_or("");
     let referer = parts.get(3).copied().unwrap_or("");
@@ -331,13 +332,12 @@ fn variant_referer(base: &str, idx: usize) -> String {
 }
 
 fn variant_timestamp(base: &str, idx: usize) -> String {
-    if let Some((stamp, tz)) = base.rsplit_once(' ') {
-        if let Some((head, sec)) = stamp.rsplit_once(':') {
-            if let Ok(sec_val) = sec.parse::<u32>() {
-                let rotated = (sec_val + (idx as u32 % 60)) % 60;
-                return format!("{}:{:02} {}", head, rotated, tz);
-            }
-        }
+    if let Some((stamp, tz)) = base.rsplit_once(' ')
+        && let Some((head, sec)) = stamp.rsplit_once(':')
+        && let Ok(sec_val) = sec.parse::<u32>()
+    {
+        let rotated = (sec_val + (idx as u32 % 60)) % 60;
+        return format!("{}:{:02} {}", head, rotated, tz);
     }
     base.to_string()
 }

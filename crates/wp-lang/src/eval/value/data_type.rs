@@ -3,9 +3,9 @@ use std::net::{IpAddr, Ipv4Addr};
 use std::str::FromStr;
 
 use crate::eval::value::parser::physical::time::parse_time;
+use wp_model_core::model::DataType;
 use wp_model_core::model::FNameStr;
 use wp_model_core::model::FValueStr;
-use wp_model_core::model::DataType;
 use wp_model_core::model::data::Field;
 use wp_model_core::model::error::ModelError;
 use wp_model_core::model::{DateTimeValue, Maker, Value};
