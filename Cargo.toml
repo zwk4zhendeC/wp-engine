@@ -298,7 +298,6 @@ ctor = "~0.6"
 
 # --- System & Platform ---
 arcstr = "~1.2"
-smol_str = { version = "~0.3", features = ["serde"] }
 walkdir = "~2.5"
 libc = "~0.2"
 hostname = "~0.4"
@@ -375,17 +374,17 @@ wp_stats = { package = "wp-stats", path = "./crates/wp-stats" }
 
 
 # --- External: Open API (Public Interfaces) ---
-wp_connector_api = { package = "wp-connector-api", git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7-smol" }
-wp_parse_api     = { package = "wp-parse-api",     git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7-smol" }
-wp_model_core    = { package = "wp-model-core",    git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7-smol" }
+wp_connector_api = { package = "wp-connector-api", git = "https://github.com/wp-labs/wp-open-api", tag = "v0.7.0-beta" }
+wp_parse_api     = { package = "wp-parse-api",     git = "https://github.com/wp-labs/wp-open-api", tag = "v0.7.0-beta" }
+wp_model_core    = { package = "wp-model-core",    git = "https://github.com/wp-labs/wp-open-api", tag = "v0.7.0-beta" }
 
 # --- External: Advanced API (Enterprise Features) ---
 wp_ctrl_api   = { package = "wp-ctrl-api",   git = "https://github.com/wp-labs/wp-advanced-api", tag = "v0.0.4-alpha" }
 wp_enrich_api = { package = "wp-enrich-api", git = "https://github.com/wp-labs/wp-advanced-api", tag = "v0.0.4-alpha" }
 
 # --- External: Infrastructure Libraries ---
-wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
-wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
-wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
-wp_conf_base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
-wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
+wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.0-beta" }
+wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.0-beta" }
+wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.0-beta" }
+wp_conf_base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.0-beta" }
+wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.0-beta" }
