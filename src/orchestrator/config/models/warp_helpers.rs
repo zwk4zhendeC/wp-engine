@@ -1,21 +1,24 @@
 use anyhow::Result;
 use orion_error::{ErrorConv, UvsConfFrom};
-use wp_knowledge::facade;
 use std::path::Path;
 use wp_conf::stat::StatConf;
 use wp_error::run_error::RunResult;
+use wp_knowledge::facade;
 use wp_log::conf::LogConf;
 use wp_stat::{StatReq, StatRequires, StatStage, StatTarget};
 
-use crate::{core::parser::wpl_engine, facade::diagnostics::print_run_error, orchestrator::config::loader::WarpConf};
+use crate::{
+    core::parser::wpl_engine, facade::diagnostics::print_run_error,
+    orchestrator::config::loader::WarpConf,
+};
+use std::{env, path::PathBuf};
 use wp_conf::constants::ENGINE_CONF_FILE;
 use wp_conf::engine::EngineConfig;
-use std::{env, path::PathBuf};
 
 /// Load main configuration and return configuration manager and engine config
 pub fn load_warp_engine_confs(work_root: &str) -> RunResult<(WarpConf, EngineConfig)> {
     if let Err(err) = env::set_current_dir(PathBuf::from(work_root)) {
-        error_ctrl!("设置工作目录失败:, error={}",&err);
+        error_ctrl!("设置工作目录失败:, error={}", &err);
         panic!("设置工作目录失败");
     };
     let main_conf = EngineConfig::load(work_root).err_conv()?;
